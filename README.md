@@ -1,4 +1,4 @@
-# MERN Stack Project
+# ReactRetail Project (MERN stack application)
 
 A full-stack application using MongoDB, Express, React with Vite, and Node.js with Tailwind CSS.
 
@@ -18,8 +18,8 @@ A full-stack application using MongoDB, Express, React with Vite, and Node.js wi
 
 ```bash
 # Clone repository
-git clone https://github.com/apaluca/react-retail.git
-cd react-retail
+git clone https://github.com/apaluca/ReactRetail.git
+cd ReactRetail
 
 # Backend setup
 cd server
