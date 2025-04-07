@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../../context/AppContext";
+import { Link } from "react-router-dom";
 
 const AdminProductsPage = () => {
   const { API, setError } = useAppContext();
@@ -27,7 +28,14 @@ const AdminProductsPage = () => {
     try {
       setLoading(true);
       const response = await API.get("/products");
-      setProducts(response.data);
+
+      // Check if the response has the expected new structure
+      if (response.data && response.data.products) {
+        setProducts(response.data.products);
+      } else {
+        // Fallback to handle old API format (direct array)
+        setProducts(Array.isArray(response.data) ? response.data : []);
+      }
     } catch (error) {
       console.error("Error fetching products:", error);
       setError("Failed to load products.");
@@ -235,15 +243,26 @@ const AdminProductsPage = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <img
-                            className="h-10 w-10 rounded-md object-cover"
-                            src={product.imageUrl}
-                            alt={product.name}
-                          />
+                          <Link
+                            to={`/products/${product._id}`}
+                            title="View product details"
+                          >
+                            <img
+                              className="h-10 w-10 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                              src={product.imageUrl}
+                              alt={product.name}
+                            />
+                          </Link>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {product.name}
+                            <Link
+                              to={`/products/${product._id}`}
+                              className="hover:text-blue-600 transition-colors"
+                              title="View product details"
+                            >
+                              {product.name}
+                            </Link>
                           </div>
                           <div className="text-sm text-gray-500 line-clamp-1">
                             {product.description}

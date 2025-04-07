@@ -34,11 +34,6 @@ router.post("/add", auth, async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Check stock availability
-    if (product.stock < quantity) {
-      return res.status(400).json({ message: "Not enough stock available" });
-    }
-
     // Find or create user's cart
     let cart = await Cart.findOne({ user: req.user._id });
     if (!cart) {
@@ -47,12 +42,25 @@ router.post("/add", auth, async (req, res) => {
 
     // Check if product already in cart
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId,
+      (item) => item.product.toString() === productId
     );
+
+    // Calculate new total quantity (existing + new)
+    let newTotalQuantity = quantity;
+    if (itemIndex > -1) {
+      newTotalQuantity += cart.items[itemIndex].quantity;
+    }
+
+    // Check if total quantity exceeds available stock
+    if (product.stock < newTotalQuantity) {
+      return res.status(400).json({
+        message: `Cannot add ${quantity} more items. Available stock: ${product.stock}, Already in cart: ${itemIndex > -1 ? cart.items[itemIndex].quantity : 0}`,
+      });
+    }
 
     if (itemIndex > -1) {
       // Update quantity if product exists
-      cart.items[itemIndex].quantity += quantity;
+      cart.items[itemIndex].quantity = newTotalQuantity;
     } else {
       // Add new item
       cart.items.push({
@@ -92,9 +100,12 @@ router.put("/update", auth, async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Check stock availability
+    // Check stock availability directly against the requested quantity
+    // since we're replacing the old quantity, not adding to it
     if (product.stock < quantity) {
-      return res.status(400).json({ message: "Not enough stock available" });
+      return res.status(400).json({
+        message: `Requested quantity exceeds available stock. Maximum available: ${product.stock}`,
+      });
     }
 
     // Find user's cart
@@ -105,7 +116,7 @@ router.put("/update", auth, async (req, res) => {
 
     // Find item in cart
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId,
+      (item) => item.product.toString() === productId
     );
 
     if (itemIndex === -1) {
@@ -141,7 +152,7 @@ router.delete("/remove/:productId", auth, async (req, res) => {
 
     // Remove item
     cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productId,
+      (item) => item.product.toString() !== productId
     );
 
     await cart.save();

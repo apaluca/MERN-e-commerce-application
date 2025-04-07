@@ -25,10 +25,15 @@ const AdminDashboardPage = () => {
           API.get("/orders/all"),
         ]);
 
+        // Handle the new products API response format
+        const productsArray = productsRes.data.products
+          ? productsRes.data.products
+          : Array.isArray(productsRes.data)
+            ? productsRes.data
+            : [];
+
         // Get low stock products (less than 10 items)
-        const lowStock = productsRes.data.filter(
-          (product) => product.stock < 10,
-        );
+        const lowStock = productsArray.filter((product) => product.stock < 10);
 
         // Get 5 most recent orders
         const recentOrders = ordersRes.data
@@ -37,7 +42,7 @@ const AdminDashboardPage = () => {
 
         setStats({
           totalUsers: usersRes.data.length,
-          totalProducts: productsRes.data.length,
+          totalProducts: productsArray.length,
           totalOrders: ordersRes.data.length,
           recentOrders,
           lowStockProducts: lowStock,
@@ -328,15 +333,22 @@ const AdminDashboardPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          <img
-                            className="h-10 w-10 rounded-md object-cover"
-                            src={product.imageUrl}
-                            alt={product.name}
-                          />
+                          <Link to={`/products/${product._id}`}>
+                            <img
+                              className="h-10 w-10 rounded-md object-cover hover:opacity-80 transition-opacity"
+                              src={product.imageUrl}
+                              alt={product.name}
+                            />
+                          </Link>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {product.name}
+                            <Link
+                              to={`/products/${product._id}`}
+                              className="hover:text-blue-600 transition-colors"
+                            >
+                              {product.name}
+                            </Link>
                           </div>
                         </div>
                       </div>
