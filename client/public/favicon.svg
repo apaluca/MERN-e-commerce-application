@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded Square Background -->
+  <rect x="8" y="8" width="48" height="48" rx="12" fill="url(#gradient)" />
+  
+  <!-- Minimalist "R" -->
+  <path d="M22 22h12a8 8 0 010 16h-12" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M28 38l8 8" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" />
+</svg>
