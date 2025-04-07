@@ -80,6 +80,13 @@ const Navbar = () => {
                         className="absolute z-10 bg-gray-800 text-white mt-2 rounded-md shadow-lg py-1 min-w-max"
                       >
                         <Link 
+                          to="/admin/dashboard" 
+                          className="block px-4 py-2 hover:bg-gray-700 whitespace-nowrap"
+                          onClick={() => setIsAdminDropdownOpen(false)}
+                        >
+                          Dashboard
+                        </Link>
+                        <Link 
                           to="/admin/users" 
                           className="block px-4 py-2 hover:bg-gray-700 whitespace-nowrap"
                           onClick={() => setIsAdminDropdownOpen(false)}
@@ -205,6 +212,13 @@ const Navbar = () => {
               <>
                 <div className="border-t border-gray-700 my-2 py-1"></div>
                 <p className="px-3 py-1 text-sm text-gray-400">Admin Panel</p>
+                <Link 
+                  to="/admin/dashboard"
+                  className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
                 <Link 
                   to="/admin/users"
                   className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"

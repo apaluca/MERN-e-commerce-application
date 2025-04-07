@@ -46,24 +46,84 @@ const CheckoutPage = () => {
   const validateForm = () => {
     const newErrors = {};
     
+    // Street validation
     if (!formData.street.trim()) {
       newErrors.street = 'Street address is required';
+    } else if (formData.street.trim().length < 5) {
+      newErrors.street = 'Please enter a valid street address';
     }
     
+    // City validation
     if (!formData.city.trim()) {
       newErrors.city = 'City is required';
+    } else if (formData.city.trim().length < 2) {
+      newErrors.city = 'Please enter a valid city name';
     }
     
+    // Postal code validation
     if (!formData.postalCode.trim()) {
       newErrors.postalCode = 'Postal code is required';
+    } else if (!/^[a-zA-Z0-9]{3,10}$/.test(formData.postalCode.trim())) {
+      newErrors.postalCode = 'Please enter a valid postal code';
     }
     
+    // Country validation
     if (!formData.country.trim()) {
       newErrors.country = 'Country is required';
+    } else if (formData.country.trim().length < 2) {
+      newErrors.country = 'Please enter a valid country name';
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleBlur = (field) => {
+    // Validate specific field on blur
+    const newErrors = { ...errors };
+    
+    switch (field) {
+      case 'street':
+        if (!formData.street.trim()) {
+          newErrors.street = 'Street address is required';
+        } else if (formData.street.trim().length < 5) {
+          newErrors.street = 'Please enter a valid street address';
+        } else {
+          delete newErrors.street;
+        }
+        break;
+      case 'city':
+        if (!formData.city.trim()) {
+          newErrors.city = 'City is required';
+        } else if (formData.city.trim().length < 2) {
+          newErrors.city = 'Please enter a valid city name';
+        } else {
+          delete newErrors.city;
+        }
+        break;
+      case 'postalCode':
+        if (!formData.postalCode.trim()) {
+          newErrors.postalCode = 'Postal code is required';
+        } else if (!/^[a-zA-Z0-9]{3,10}$/.test(formData.postalCode.trim())) {
+          newErrors.postalCode = 'Please enter a valid postal code';
+        } else {
+          delete newErrors.postalCode;
+        }
+        break;
+      case 'country':
+        if (!formData.country.trim()) {
+          newErrors.country = 'Country is required';
+        } else if (formData.country.trim().length < 2) {
+          newErrors.country = 'Please enter a valid country name';
+        } else {
+          delete newErrors.country;
+        }
+        break;
+      default:
+        break;
+    }
+    
+    setErrors(newErrors);
   };
 
   const handleSubmit = async (e) => {
@@ -86,8 +146,8 @@ const CheckoutPage = () => {
       const result = await createOrder(shippingAddress, formData.paymentMethod);
       
       if (result.success) {
-        // Navigate to order confirmation
-        navigate('/orders');
+        // Navigate to order confirmation with the order data
+        navigate('/order-confirmation', { state: { order: result.order } });
       }
     } catch (error) {
       console.error('Error placing order:', error);
@@ -117,6 +177,7 @@ const CheckoutPage = () => {
                     name="street"
                     value={formData.street}
                     onChange={handleChange}
+                    onBlur={() => handleBlur('street')}
                     className={`mt-1 block w-full border ${errors.street ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                   />
                   {errors.street && (
@@ -134,6 +195,7 @@ const CheckoutPage = () => {
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
+                    onBlur={() => handleBlur('city')}
                     className={`mt-1 block w-full border ${errors.city ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                   />
                   {errors.city && (
@@ -152,6 +214,7 @@ const CheckoutPage = () => {
                       name="postalCode"
                       value={formData.postalCode}
                       onChange={handleChange}
+                      onBlur={() => handleBlur('postalCode')}
                       className={`mt-1 block w-full border ${errors.postalCode ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     />
                     {errors.postalCode && (
@@ -169,6 +232,7 @@ const CheckoutPage = () => {
                       name="country"
                       value={formData.country}
                       onChange={handleChange}
+                      onBlur={() => handleBlur('country')}
                       className={`mt-1 block w-full border ${errors.country ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                     />
                     {errors.country && (
