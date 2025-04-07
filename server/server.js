@@ -23,6 +23,7 @@ const productRoutes = require("./routes/products");
 const cartRoutes = require("./routes/cart");
 const orderRoutes = require("./routes/orders");
 const adminRoutes = require("./routes/admin");
+const reviewRoutes = require("./routes/review");
 
 // API routes
 app.use("/auth", authRoutes);
@@ -30,6 +31,7 @@ app.use("/products", productRoutes);
 app.use("/cart", cartRoutes);
 app.use("/orders", orderRoutes);
 app.use("/admin", adminRoutes);
+app.use("/reviews", reviewRoutes);
 
 // MongoDB Connection
 mongoose

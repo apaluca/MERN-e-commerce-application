@@ -43,16 +43,16 @@ router.post("/:productId", auth, async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Verify the user has purchased this product
+    // Verify the user has purchased this product AND the order is delivered
     const hasPurchased = await Order.exists({
       user: req.user._id,
       "items.product": productId,
-      status: { $in: ["delivered", "shipped"] },
+      status: "delivered", // Only delivered orders qualify
     });
 
     if (!hasPurchased) {
       return res.status(403).json({
-        message: "You can only review products you have purchased",
+        message: "You can only review products from delivered orders",
       });
     }
 

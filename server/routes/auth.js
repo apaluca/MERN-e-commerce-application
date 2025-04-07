@@ -203,7 +203,7 @@ router.put("/profile", auth, async (req, res) => {
   }
 });
 
-// Update user address (for a real app, we'd likely have a separate Address model)
+// Update user address
 router.put("/address", auth, async (req, res) => {
   try {
     const { street, city, postalCode, country } = req.body;

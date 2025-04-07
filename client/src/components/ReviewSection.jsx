@@ -40,6 +40,7 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasPurchased, setHasPurchased] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [justSubmitted, setJustSubmitted] = useState(false);
 
   useEffect(() => {
     // Check if the user has purchased the product and hasn't reviewed it yet
@@ -47,14 +48,14 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
       try {
         const orders = await API.get("/orders");
 
-        // Check if user has purchased this product
+        // Check if user has purchased this product AND the order is delivered
         const purchased = orders.data.some(
           (order) =>
             order.items.some(
               (item) =>
                 item.product === productId ||
-                (item.product._id && item.product._id === productId),
-            ) && ["delivered", "shipped"].includes(order.status),
+                (item.product._id && item.product._id === productId)
+            ) && order.status === "delivered" // Only delivered orders qualify
         );
 
         setHasPurchased(purchased);
@@ -63,13 +64,17 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
           // Check if user has already reviewed this product
           const reviews = await API.get(`/reviews/user`);
           const alreadyReviewed = reviews.data.some(
-            (review) => review.product._id === productId,
+            (review) =>
+              review.product._id === productId ||
+              (typeof review.product === "string" &&
+                review.product === productId)
           );
 
           setHasReviewed(alreadyReviewed);
         }
       } catch (error) {
         console.error("Error checking review eligibility:", error);
+        // Don't set an error here to avoid showing error messages when the user first loads the page
       }
     };
 
@@ -97,10 +102,21 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
         comment,
       });
 
+      // Reset form
       setRating(0);
       setComment("");
-      setHasReviewed(true);
+
+      // Show success message instead of immediately showing "already reviewed"
+      setJustSubmitted(true);
+
+      // Pass the new review up to parent to add to the list
       onReviewAdded(response.data);
+
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setJustSubmitted(false);
+        setHasReviewed(true); // Only set this after timeout
+      }, 5000);
     } catch (error) {
       setError(error.response?.data?.message || "Failed to submit review");
     } finally {
@@ -108,7 +124,7 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
     }
   };
 
-  if (hasReviewed) {
+  if (hasReviewed && !justSubmitted) {
     return (
       <div className="mt-6 bg-blue-50 p-4 rounded-md">
         <p className="text-blue-700">
@@ -118,11 +134,22 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
     );
   }
 
+  if (justSubmitted) {
+    return (
+      <div className="mt-6 bg-green-50 p-4 rounded-md">
+        <p className="text-green-700">
+          Thank you! Your review has been successfully submitted.
+        </p>
+      </div>
+    );
+  }
+
   if (!hasPurchased) {
     return (
       <div className="mt-6 bg-gray-50 p-4 rounded-md">
         <p className="text-gray-700">
-          You can leave a review after purchasing and receiving this product.
+          You can only leave a review after purchasing and receiving this
+          product.
         </p>
       </div>
     );
@@ -196,14 +223,17 @@ const ReviewSection = ({ productId }) => {
   const { API } = useAppContext();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchReviews = async () => {
     try {
       setLoading(true);
+      setError(null);
       const response = await API.get(`/reviews/product/${productId}`);
       setReviews(response.data);
     } catch (error) {
       console.error("Error fetching reviews:", error);
+      setError("Unable to load reviews at this time.");
     } finally {
       setLoading(false);
     }
@@ -226,7 +256,11 @@ const ReviewSection = ({ productId }) => {
       <ReviewForm productId={productId} onReviewAdded={handleReviewAdded} />
 
       <div className="mt-8">
-        {loading ? (
+        {error ? (
+          <div className="text-center py-4">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : loading ? (
           <div className="text-center py-4">
             <div className="text-gray-500">Loading reviews...</div>
           </div>
