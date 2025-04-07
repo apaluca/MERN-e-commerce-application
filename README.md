@@ -12,7 +12,7 @@ A full-stack e-commerce application using MongoDB, Express, React with Vite, and
 
 ### Prerequisites
 - Node.js (v22.14 recommended)
-- MongoDB installed and running
+- MongoDB installed and running (ideally as a Docker container)
 
 ### Installation
 
@@ -81,14 +81,48 @@ ReactRetail/
 
 ## Features
 
-- User authentication (login/register) with JWT
-- Role-based access control (user/admin)
-- Product browsing and filtering
-- Shopping cart management
-- Checkout process
-- Order history
-- Admin dashboard for user, product, and order management
-- Responsive design with Tailwind CSS
+- **Authentication System**
+  - Secure login page with JWT-based authentication 
+  - User registration with validation
+  - Persistent session management for authenticated users
+
+- **Role-Based Access Control**
+  - Three distinct user roles: Guest (non-authenticated), User, and Admin
+  - Different navigation options and permissions based on user role
+  - Protected routes to prevent unauthorized access
+
+- **Admin Dashboard**
+  - User management panel (create, edit, delete, activate/deactivate accounts)
+  - Product management with image gallery support
+  - Order processing workflow (pending, processing, shipped, delivered)
+  - Sales analytics and inventory management
+
+- **Product Catalog**
+  - Filterable and searchable product listings displayed in responsive tables
+  - Category-based navigation
+  - Pagination for product listings
+  - Detailed product pages with image galleries
+
+- **Shopping Experience**
+  - Complete e-commerce workflow implementation
+  - Shopping cart with quantity adjustments
+  - Checkout process with address and payment method selection
+  - Order confirmation and history
+
+- **Responsive Design**
+  - Mobile-first approach with Tailwind CSS
+  - Adaptive layouts that work on desktop, tablet, and mobile devices
+  - Optimized navigation for different screen sizes
+
+- **Review System**
+  - Product reviews with star ratings
+  - Only verified purchasers can leave reviews
+  - Users can see their review history
+
+- **Data Persistence**
+  - MongoDB database with Mongoose schemas
+  - User data and sessions storage
+  - Complete order history and product catalog
 
 ## Development
 
