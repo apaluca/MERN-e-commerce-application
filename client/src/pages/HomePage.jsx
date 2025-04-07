@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 const HomePage = () => {
   const { API, addToCart, user } = useAppContext();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -25,7 +27,10 @@ const HomePage = () => {
   }, [API]);
 
   const handleAddToCart = async (productId) => {
-    await addToCart(productId, 1);
+    const result = await addToCart(productId, 1);
+    if (result.success) {
+      navigate('/cart');
+    }
   };
 
   return (

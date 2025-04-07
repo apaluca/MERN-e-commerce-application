@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
 
 const ProductsPage = () => {
   const { API, addToCart, user, setError } = useAppContext();
@@ -11,7 +12,7 @@ const ProductsPage = () => {
   const [sortBy, setSortBy] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  
+  const navigate = useNavigate();
   const location = useLocation();
   
   useEffect(() => {
@@ -46,12 +47,14 @@ const ProductsPage = () => {
 
   const handleAddToCart = async (productId) => {
     if (!user) {
-      // Redirect or show login prompt
       setError('Please login to add items to cart');
       return;
     }
     
-    await addToCart(productId, 1);
+    const result = await addToCart(productId, 1);
+    if (result.success) {
+      navigate('/cart'); // Redirect to cart on success
+    }
   };
 
   // Filter products by category, search query, and price range
