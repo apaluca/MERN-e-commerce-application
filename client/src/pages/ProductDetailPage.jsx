@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import ReviewSection from '../components/ReviewSection';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
@@ -10,6 +11,8 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentImage, setCurrentImage] = useState(0);
+  const [productImages, setProductImages] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -17,6 +20,13 @@ const ProductDetailPage = () => {
         setLoading(true);
         const response = await API.get(`/products/${id}`);
         setProduct(response.data);
+        
+        // Just using the same image multiple times as a placeholder
+        setProductImages([
+          response.data.imageUrl,
+          response.data.imageUrl,
+          response.data.imageUrl
+        ]);
       } catch (error) {
         console.error('Error fetching product:', error);
         setError('Product not found or an error occurred.');
@@ -74,11 +84,28 @@ const ProductDetailPage = () => {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="md:flex">
           <div className="md:w-1/2">
-            <img
-              src={product.imageUrl}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+            <div className="relative pb-[75%] h-0">
+              <img
+                src={productImages[currentImage]}
+                alt={product.name}
+                className="absolute h-full w-full object-cover"
+              />
+            </div>
+            
+            {/* Thumbnail Gallery */}
+            <div className="flex p-4 space-x-2">
+              {productImages.map((image, index) => (
+                <button 
+                  key={index}
+                  onClick={() => setCurrentImage(index)}
+                  className={`w-20 h-20 border-2 rounded overflow-hidden ${
+                    currentImage === index ? 'border-blue-500' : 'border-gray-200'
+                  }`}
+                >
+                  <img src={image} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
           <div className="md:w-1/2 p-8">
             <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
@@ -170,6 +197,9 @@ const ProductDetailPage = () => {
           </div>
         </div>
       </div>
+      
+      {/* Product Reviews Section */}
+      {product && <ReviewSection productId={product._id} />}
     </div>
   );
 };

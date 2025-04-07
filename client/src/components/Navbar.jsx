@@ -58,6 +58,11 @@ const Navbar = () => {
                     My Orders
                   </Link>
                 )}
+                {user && (
+                  <Link to="/profile" className="px-3 py-2 rounded-md hover:bg-gray-700">
+                    Profile
+                  </Link>
+                )}
                 {user && user.role === 'admin' && (
                   <div className="relative" ref={dropdownRef}>
                     <button 
@@ -206,6 +211,15 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 My Orders
+              </Link>
+            )}
+            {user && (
+              <Link 
+                to="/profile"
+                className="block px-3 py-2 rounded-md hover:bg-gray-700"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                My Profile
               </Link>
             )}
             {user && user.role === 'admin' && (

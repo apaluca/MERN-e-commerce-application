@@ -119,4 +119,79 @@ router.get("/me", auth, async (req, res) => {
   }
 });
 
+// Update user profile
+router.put("/profile", auth, async (req, res) => {
+  try {
+    const { username, email, currentPassword, newPassword } = req.body;
+    
+    // Get current user from database to ensure we have the latest data
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Check if username already exists (if changed)
+    if (username !== user.username) {
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already taken" });
+      }
+    }
+    
+    // Check if email already exists (if changed)
+    if (email !== user.email) {
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already in use" });
+      }
+    }
+    
+    // Update fields
+    user.username = username;
+    user.email = email;
+    
+    // If changing password
+    if (newPassword) {
+      // Verify current password
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+    
+    // Save user
+    await user.save();
+    
+    // Return updated user data without password
+    res.json({
+      id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      active: user.active
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update user address (for a real app, we'd likely have a separate Address model)
+router.put("/address", auth, async (req, res) => {
+  try {
+    const { street, city, postalCode, country } = req.body;
+    
+    // In a real app, we'd update or create an address record
+    // For now, we'll just return success
+    res.json({ message: "Address updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;

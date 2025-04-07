@@ -112,23 +112,19 @@ const OrdersPage = () => {
                       </div>
                     </div>
                     <div className="mt-4 sm:mt-0">
-                      <button
-                        type="button"
+                      <Link
+                        to={`/orders/${order._id}`}
                         className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                        onClick={() => {
-                          // Implement view order details functionality
-                          // Could open a modal or navigate to a details page
-                        }}
                       >
                         View details
-                      </button>
+                      </Link>
                     </div>
                   </div>
                   
                   <div className="mt-4">
                     <div className="flow-root">
                       <ul className="divide-y divide-gray-200">
-                        {order.items.map((item) => (
+                        {order.items.slice(0, 2).map((item) => (
                           <li key={item._id} className="py-3 flex">
                             <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
                               <img
@@ -148,6 +144,13 @@ const OrdersPage = () => {
                             </div>
                           </li>
                         ))}
+                        {order.items.length > 2 && (
+                          <li className="py-2">
+                            <Link to={`/orders/${order._id}`} className="text-sm text-gray-500 hover:text-gray-700">
+                              + {order.items.length - 2} more item(s)
+                            </Link>
+                          </li>
+                        )}
                       </ul>
                     </div>
                   </div>

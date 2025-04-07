@@ -14,14 +14,18 @@ const users = [
     username: "admin",
     email: "admin@example.com",
     password: "password123",
-    role: "admin"
+    role: "admin",
+    active: true,
+    createdAt: new Date(),
   },
   {
     username: "user",
     email: "user@example.com",
     password: "password123",
-    role: "user"
-  }
+    role: "user",
+    active: true,
+    createdAt: new Date(),
+  },
 ];
 
 // Sample product categories
@@ -189,16 +193,18 @@ const seedDatabase = async (clearDB = false) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(userData.password, salt);
 
-        // Create user with pre-hashed password
+        // Create user with pre-hashed password and explicitly set fields
         const user = await User.create({
           ...userData,
           password: hashedPassword,
+          active: true, // Explicitly set active status
+          createdAt: new Date(), // Explicitly set creation date
         });
 
         createdUsers.push(user);
         console.log(`User created: ${user.username} (${user.role})`);
       } else {
-        // For existing users, ensure password is correctly hashed
+        // For existing users, ensure password is correctly hashed and update fields
         let needsUpdate = false;
 
         // Test if the password is already hashed by attempting to compare
@@ -215,20 +221,34 @@ const seedDatabase = async (clearDB = false) => {
           needsUpdate = true;
         }
 
+        // Check if active status and createdAt needs update
+        if (existingUser.active !== true || !existingUser.createdAt) {
+          needsUpdate = true;
+        }
+
         if (needsUpdate) {
-          // Update with properly hashed password
+          // Update with properly hashed password and other fields
           const salt = await bcrypt.genSalt(10);
           const hashedPassword = await bcrypt.hash(userData.password, salt);
 
           existingUser.password = hashedPassword;
+          existingUser.active = true; // Ensure active is true
+
+          // Set createdAt if it doesn't exist
+          if (!existingUser.createdAt) {
+            existingUser.createdAt = new Date();
+          }
+
           await existingUser.save();
-          console.log(
-            `User updated with correct password hash: ${existingUser.username}`
-          );
+          console.log(`User updated: ${existingUser.username}`);
+          console.log(`  - Active: ${existingUser.active}`);
+          console.log(`  - Created At: ${existingUser.createdAt}`);
         } else {
           console.log(
-            `User already exists with correct password: ${existingUser.username} (${existingUser.role})`
+            `User already exists with correct settings: ${existingUser.username} (${existingUser.role})`
           );
+          console.log(`  - Active: ${existingUser.active}`);
+          console.log(`  - Created At: ${existingUser.createdAt}`);
         }
 
         createdUsers.push(existingUser);

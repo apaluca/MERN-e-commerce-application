@@ -7,10 +7,12 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
+import ProfilePage from './pages/ProfilePage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import OrdersPage from './pages/OrdersPage';
 import OrderConfirmationPage from './pages/OrderConfirmationPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 import AdminDashboardPage from './pages/admin/DashboardPage';
 import AdminUsersPage from './pages/admin/UsersPage';
 import AdminProductsPage from './pages/admin/ProductsPage';
@@ -58,6 +60,11 @@ function App() {
               <Route path="/products/:id" element={<ProductDetailPage />} />
               
               {/* Protected routes - User */}
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              } />
               <Route path="/cart" element={
                 <ProtectedRoute>
                   <CartPage />
@@ -76,6 +83,11 @@ function App() {
               <Route path="/order-confirmation" element={
                 <ProtectedRoute>
                   <OrderConfirmationPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/orders/:id" element={
+                <ProtectedRoute>
+                  <OrderDetailPage />
                 </ProtectedRoute>
               } />
               
