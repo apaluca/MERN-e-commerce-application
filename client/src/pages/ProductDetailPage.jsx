@@ -11,8 +11,8 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentImage, setCurrentImage] = useState(0);
-  const [productImages, setProductImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [allProductImages, setAllProductImages] = useState([]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -21,12 +21,21 @@ const ProductDetailPage = () => {
         const response = await API.get(`/products/${id}`);
         setProduct(response.data);
         
-        // Just using the same image multiple times as a placeholder
-        setProductImages([
-          response.data.imageUrl,
-          response.data.imageUrl,
-          response.data.imageUrl
-        ]);
+        // Combine main image and additional images for the gallery
+        const mainImage = response.data.imageUrl;
+        const additionalImages = response.data.images || [];
+        
+        // Create a complete array of images without duplicates
+        const allImages = [mainImage];
+        
+        // Add additional images only if they're not the same as the main image
+        additionalImages.forEach(img => {
+          if (!allImages.includes(img)) {
+            allImages.push(img);
+          }
+        });
+        
+        setAllProductImages(allImages);
       } catch (error) {
         console.error('Error fetching product:', error);
         setError('Product not found or an error occurred.');
@@ -52,6 +61,10 @@ const ProductDetailPage = () => {
         navigate('/cart');
       }
     }
+  };
+
+  const handleImageChange = (index) => {
+    setCurrentImageIndex(index);
   };
 
   if (loading) {
@@ -84,28 +97,36 @@ const ProductDetailPage = () => {
       <div className="bg-white rounded-lg shadow-lg overflow-hidden">
         <div className="md:flex">
           <div className="md:w-1/2">
-            <div className="relative pb-[75%] h-0">
+            {/* Main Image Display */}
+            <div className="relative pb-[75%] h-0 bg-gray-100">
               <img
-                src={productImages[currentImage]}
+                src={allProductImages[currentImageIndex]}
                 alt={product.name}
-                className="absolute h-full w-full object-cover"
+                className="absolute h-full w-full object-contain"
               />
             </div>
             
-            {/* Thumbnail Gallery */}
-            <div className="flex p-4 space-x-2">
-              {productImages.map((image, index) => (
-                <button 
-                  key={index}
-                  onClick={() => setCurrentImage(index)}
-                  className={`w-20 h-20 border-2 rounded overflow-hidden ${
-                    currentImage === index ? 'border-blue-500' : 'border-gray-200'
-                  }`}
-                >
-                  <img src={image} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
+            {/* Image Gallery */}
+            {allProductImages.length > 1 && (
+              <div className="p-4 flex overflow-x-auto space-x-2">
+                {allProductImages.map((image, index) => (
+                  <button 
+                    key={index}
+                    onClick={() => handleImageChange(index)}
+                    className={`flex-shrink-0 w-16 h-16 border-2 rounded overflow-hidden ${
+                      currentImageIndex === index ? 'border-blue-500' : 'border-gray-200'
+                    }`}
+                    aria-label={`View product image ${index + 1}`}
+                  >
+                    <img 
+                      src={image} 
+                      alt={`${product.name} view ${index + 1}`} 
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="md:w-1/2 p-8">
             <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
@@ -140,6 +161,7 @@ const ProductDetailPage = () => {
                         type="button"
                         onClick={() => quantity > 1 && setQuantity(quantity - 1)}
                         className="px-3 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200"
+                        aria-label="Decrease quantity"
                       >
                         -
                       </button>
@@ -157,6 +179,7 @@ const ProductDetailPage = () => {
                         type="button"
                         onClick={() => quantity < product.stock && setQuantity(quantity + 1)}
                         className="px-3 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200"
+                        aria-label="Increase quantity"
                       >
                         +
                       </button>

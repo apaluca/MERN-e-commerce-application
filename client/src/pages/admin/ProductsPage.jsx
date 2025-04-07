@@ -13,9 +13,11 @@ const AdminProductsPage = () => {
     description: '',
     price: '',
     imageUrl: '',
+    images: [],
     category: '',
     stock: ''
   });
+  const [newImageUrl, setNewImageUrl] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -43,6 +45,7 @@ const AdminProductsPage = () => {
         description: product.description,
         price: product.price,
         imageUrl: product.imageUrl,
+        images: product.images || [],
         category: product.category,
         stock: product.stock
       });
@@ -54,6 +57,7 @@ const AdminProductsPage = () => {
         description: '',
         price: '',
         imageUrl: 'https://dummyimage.com/200x200/e0e0e0/333333&text=Product',
+        images: [],
         category: '',
         stock: ''
       });
@@ -63,6 +67,7 @@ const AdminProductsPage = () => {
 
   const handleCloseModal = () => {
     setModalOpen(false);
+    setNewImageUrl('');
   };
 
   const handleChange = (e) => {
@@ -70,6 +75,47 @@ const AdminProductsPage = () => {
     setFormData({
       ...formData,
       [name]: name === 'price' || name === 'stock' ? parseFloat(value) || '' : value
+    });
+  };
+
+  const handleAddImage = () => {
+    if (newImageUrl && formData.images.length < 5) {
+      setFormData({
+        ...formData,
+        images: [...formData.images, newImageUrl]
+      });
+      setNewImageUrl('');
+    } else if (formData.images.length >= 5) {
+      setError('Maximum of 5 additional images allowed');
+    }
+  };
+
+  const handleRemoveImage = (index) => {
+    const updatedImages = [...formData.images];
+    updatedImages.splice(index, 1);
+    setFormData({
+      ...formData,
+      images: updatedImages
+    });
+  };
+
+  const handleMoveImage = (index, direction) => {
+    if (
+      (direction === 'up' && index === 0) || 
+      (direction === 'down' && index === formData.images.length - 1)
+    ) {
+      return;
+    }
+
+    const updatedImages = [...formData.images];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    [updatedImages[index], updatedImages[newIndex]] = 
+    [updatedImages[newIndex], updatedImages[index]];
+    
+    setFormData({
+      ...formData,
+      images: updatedImages
     });
   };
 
@@ -152,6 +198,9 @@ const AdminProductsPage = () => {
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Stock
                   </th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Images
+                  </th>
                   <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -183,6 +232,13 @@ const AdminProductsPage = () => {
                       }`}>
                         {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {(product.images && product.images.length > 0) ? 
+                          `${product.images.length + 1} images` : 
+                          '1 image'}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -266,7 +322,7 @@ const AdminProductsPage = () => {
                   
                   <div>
                     <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">
-                      Image URL
+                      Main Image URL
                     </label>
                     <input
                       type="text"
@@ -310,6 +366,77 @@ const AdminProductsPage = () => {
                       min="0"
                       className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
+                  </div>
+                  
+                  {/* Additional Images Section */}
+                  <div className="md:col-span-2 mt-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Additional Images <span className="text-xs text-gray-500">(Max 5)</span>
+                    </label>
+                    
+                    <div className="flex items-center">
+                      <input
+                        type="text"
+                        value={newImageUrl}
+                        onChange={(e) => setNewImageUrl(e.target.value)}
+                        placeholder="Enter image URL"
+                        className="flex-1 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddImage}
+                        disabled={formData.images.length >= 5}
+                        className="ml-2 inline-flex items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400"
+                      >
+                        Add
+                      </button>
+                    </div>
+                    
+                    {formData.images.length > 0 && (
+                      <div className="mt-3 grid grid-cols-1 gap-2">
+                        {formData.images.map((image, index) => (
+                          <div key={index} className="flex items-center border border-gray-200 rounded-md p-2">
+                            <div className="flex-shrink-0 h-12 w-12 mr-3">
+                              <img src={image} alt={`Additional ${index + 1}`} className="h-full w-full object-cover rounded-md" />
+                            </div>
+                            <div className="flex-1 truncate text-sm">{image}</div>
+                            <div className="ml-2 flex">
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(index, 'up')}
+                                disabled={index === 0}
+                                className="text-gray-500 hover:text-gray-700 p-1 disabled:text-gray-300"
+                              >
+                                ↑
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleMoveImage(index, 'down')}
+                                disabled={index === formData.images.length - 1}
+                                className="text-gray-500 hover:text-gray-700 p-1 disabled:text-gray-300"
+                              >
+                                ↓
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(index)}
+                                className="text-red-500 hover:text-red-700 p-1 ml-1"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {formData.images.length === 0 && (
+                      <p className="mt-2 text-sm text-gray-500">No additional images added yet.</p>
+                    )}
+                    
+                    <p className="mt-2 text-xs text-gray-500">
+                      {formData.images.length}/5 additional images added. The main image plus these will form the product gallery.
+                    </p>
                   </div>
                 </div>
               </div>

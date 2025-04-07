@@ -7,23 +7,49 @@ const HomePage = () => {
   const { API, addToCart, user } = useAppContext();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchFeaturedProducts = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await API.get('/products');
-        // Get first 4 products for featured section
-        setFeaturedProducts(response.data.slice(0, 4));
+        
+        // Fetch products for featured section
+        const response = await API.get('/products?limit=4&sort=newest');
+        
+        // Check if the response has the expected structure
+        if (response.data && response.data.products) {
+          setFeaturedProducts(response.data.products);
+        } else {
+          // Fallback in case the API returns just an array of products
+          setFeaturedProducts(Array.isArray(response.data) ? response.data.slice(0, 4) : []);
+        }
+        
+        // Fetch categories
+        const categoryRes = await API.get('/products');
+        
+        if (categoryRes.data && categoryRes.data.products) {
+          // Extract unique categories from the products array in the new API response format
+          const uniqueCategories = [...new Set(categoryRes.data.products.map(product => product.category))];
+          setCategories(uniqueCategories);
+        } else if (Array.isArray(categoryRes.data)) {
+          // Fallback for the old format
+          const uniqueCategories = [...new Set(categoryRes.data.map(product => product.category))];
+          setCategories(uniqueCategories);
+        } else {
+          setCategories([]);
+        }
       } catch (error) {
-        console.error('Error fetching featured products:', error);
+        console.error('Error fetching homepage data:', error);
+        setFeaturedProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFeaturedProducts();
+    fetchData();
   }, [API]);
 
   const handleAddToCart = async (productId) => {
@@ -97,12 +123,17 @@ const HomePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((product) => (
               <div key={product._id} className="bg-white rounded-lg shadow overflow-hidden">
-                <Link to={`/products/${product._id}`}>
+                <Link to={`/products/${product._id}`} className="block relative">
                   <img 
                     src={product.imageUrl} 
                     alt={product.name} 
                     className="w-full h-48 object-cover"
                   />
+                  {product.images && product.images.length > 0 && (
+                    <span className="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-md">
+                      +{product.images.length} photos
+                    </span>
+                  )}
                 </Link>
                 <div className="p-4">
                   <Link to={`/products/${product._id}`} className="hover:text-blue-500">
@@ -151,26 +182,19 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Shop by Category</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link to="/products?category=electronics" className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow group">
-              <div className="text-center">
-                <span className="block text-xl text-gray-800 font-medium group-hover:text-blue-500">Electronics</span>
-              </div>
-            </Link>
-            <Link to="/products?category=clothing" className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow group">
-              <div className="text-center">
-                <span className="block text-xl text-gray-800 font-medium group-hover:text-blue-500">Clothing</span>
-              </div>
-            </Link>
-            <Link to="/products?category=home" className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow group">
-              <div className="text-center">
-                <span className="block text-xl text-gray-800 font-medium group-hover:text-blue-500">Home & Kitchen</span>
-              </div>
-            </Link>
-            <Link to="/products?category=books" className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow group">
-              <div className="text-center">
-                <span className="block text-xl text-gray-800 font-medium group-hover:text-blue-500">Books</span>
-              </div>
-            </Link>
+            {categories.slice(0, 8).map((category) => (
+              <Link 
+                key={category} 
+                to={`/products?category=${category}`} 
+                className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow group"
+              >
+                <div className="text-center">
+                  <span className="block text-xl text-gray-800 font-medium group-hover:text-blue-500 capitalize">
+                    {category}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
