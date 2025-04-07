@@ -191,14 +191,20 @@ const OrderDetailPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md overflow-hidden">
-                            <img 
-                              src={item.product?.imageUrl || "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"} 
-                              alt={item.name}
-                              className="h-full w-full object-cover"
-                            />
+                            <Link to={`/products/${item.product?._id}`}>
+                              <img 
+                                src={item.product?.imageUrl || "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"} 
+                                alt={item.name}
+                                className="h-full w-full object-cover"
+                              />
+                            </Link>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                            <div className="text-sm font-medium text-gray-900">
+                              <Link to={`/products/${item.product?._id}`} className="hover:text-blue-600">
+                                {item.name}
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       </td>

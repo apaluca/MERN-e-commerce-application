@@ -130,7 +130,9 @@ const ProductDetailPage = () => {
           </div>
           <div className="md:w-1/2 p-8">
             <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
-              {product.category}
+              <Link to={`/products?category=${product.category}`} className="hover:text-indigo-700">
+                {product.category}
+              </Link>
             </div>
             <h1 className="mt-2 text-3xl font-bold text-gray-900">{product.name}</h1>
             <div className="mt-4">
@@ -153,14 +155,14 @@ const ProductDetailPage = () => {
               <div className="mt-6">
                 <div className="flex items-center space-x-4">
                   <div>
-                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
                       Quantity
                     </label>
-                    <div className="mt-1 flex rounded-md">
+                    <div className="mt-1 flex items-center">
                       <button
                         type="button"
                         onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-                        className="px-3 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200"
+                        className="h-10 px-3 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200 flex items-center justify-center"
                         aria-label="Decrease quantity"
                       >
                         -
@@ -173,12 +175,16 @@ const ProductDetailPage = () => {
                         max={product.stock}
                         value={quantity}
                         onChange={handleQuantityChange}
-                        className="w-16 border-t border-b border-gray-300 px-2 py-1 text-center focus:outline-none"
+                        className="h-10 w-16 border-t border-b border-gray-300 px-2 py-1 text-center focus:outline-none appearance-none"
+                        style={{ 
+                          WebkitAppearance: 'none', 
+                          MozAppearance: 'textfield' 
+                        }}
                       />
                       <button
                         type="button"
                         onClick={() => quantity < product.stock && setQuantity(quantity + 1)}
-                        className="px-3 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200"
+                        className="h-10 px-3 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200 flex items-center justify-center"
                         aria-label="Increase quantity"
                       >
                         +
@@ -187,7 +193,7 @@ const ProductDetailPage = () => {
                   </div>
                   <button
                     onClick={handleAddToCart}
-                    className="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+                    className="h-10 mt-7 px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
                   >
                     Add to Cart
                   </button>
