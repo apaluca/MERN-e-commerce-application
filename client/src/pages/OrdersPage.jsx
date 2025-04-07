@@ -128,7 +128,7 @@ const OrdersPage = () => {
                           <li key={item._id} className="py-3 flex">
                             <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
                               <img
-                                src="https://dummyimage.com/200x200/e0e0e0/333333&text=Product"
+                                src={item.product?.imageUrl || "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"}
                                 alt={item.name}
                                 className="w-full h-full object-cover"
                               />

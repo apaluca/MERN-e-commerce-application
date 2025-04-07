@@ -8,9 +8,12 @@ const { auth, authorize } = require("../middleware/auth");
 // Get user orders
 router.get("/", auth, async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({
-      createdAt: -1,
-    });
+    const orders = await Order.find({ user: req.user._id })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "items.product",
+        select: "name imageUrl",
+      });
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -20,10 +23,16 @@ router.get("/", auth, async (req, res) => {
 // Get all orders (admin only)
 router.get("/all", auth, authorize("admin"), async (req, res) => {
   try {
-    const orders = await Order.find().sort({ createdAt: -1 }).populate({
-      path: "user",
-      select: "username email",
-    });
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "user",
+        select: "username email",
+      })
+      .populate({
+        path: "items.product",
+        select: "name imageUrl",
+      });
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -33,7 +42,10 @@ router.get("/all", auth, authorize("admin"), async (req, res) => {
 // Get order by ID
 router.get("/:id", auth, async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id).populate({
+      path: "items.product",
+      select: "name imageUrl",
+    });
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -117,6 +129,12 @@ router.post("/", auth, async (req, res) => {
     cart.items = [];
     await cart.save();
 
+    // Populate the product details before sending the response
+    await createdOrder.populate({
+      path: "items.product",
+      select: "name imageUrl",
+    });
+
     res.status(201).json(createdOrder);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -144,6 +162,12 @@ router.put("/:id/status", auth, authorize("admin"), async (req, res) => {
 
     order.status = status;
     const updatedOrder = await order.save();
+
+    // Populate the product details
+    await updatedOrder.populate({
+      path: "items.product",
+      select: "name imageUrl",
+    });
 
     res.json(updatedOrder);
   } catch (err) {

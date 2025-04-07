@@ -192,7 +192,7 @@ const OrderDetailPage = () => {
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-md overflow-hidden">
                             <img 
-                              src="https://dummyimage.com/200x200/e0e0e0/333333&text=Product" 
+                              src={item.product?.imageUrl || "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"} 
                               alt={item.name}
                               className="h-full w-full object-cover"
                             />

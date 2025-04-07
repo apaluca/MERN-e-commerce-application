@@ -68,9 +68,18 @@ const OrderConfirmationPage = () => {
         <div className="space-y-3 mb-6">
           {order.items.map((item) => (
             <div key={item._id} className="flex justify-between">
-              <div>
-                <span className="font-medium">{item.name}</span>
-                <span className="text-gray-600 text-sm"> x {item.quantity}</span>
+              <div className="flex items-center">
+                <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden mr-3">
+                  <img 
+                    src={item.product?.imageUrl || "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"} 
+                    alt={item.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div>
+                  <span className="font-medium">{item.name}</span>
+                  <span className="text-gray-600 text-sm"> x {item.quantity}</span>
+                </div>
               </div>
               <span>${(item.price * item.quantity).toFixed(2)}</span>
             </div>

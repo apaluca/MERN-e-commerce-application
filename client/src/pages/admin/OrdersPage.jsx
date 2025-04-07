@@ -229,6 +229,13 @@ const AdminOrdersPage = () => {
               <ul className="mt-2 divide-y divide-gray-200">
                 {selectedOrder.items.map((item) => (
                   <li key={item._id} className="py-3 flex">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden mr-3">
+                      <img
+                        src={item.product?.imageUrl || "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"}
+                        alt={item.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                     <div className="flex-1 flex items-center">
                       <div>
                         <h5 className="text-sm font-medium text-gray-900">{item.name}</h5>
