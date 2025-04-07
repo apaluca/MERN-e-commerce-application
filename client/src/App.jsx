@@ -1,17 +1,103 @@
-import PostForm from './components/PostForm'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider, useAppContext } from './context/AppContext';
+
+// Page components
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProductsPage from './pages/ProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import OrdersPage from './pages/OrdersPage';
+import AdminUsersPage from './pages/admin/UsersPage';
+import AdminProductsPage from './pages/admin/ProductsPage';
+import AdminOrdersPage from './pages/admin/OrdersPage';
+import NotFoundPage from './pages/NotFoundPage';
+
+// Layout components
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Alert from './components/Alert';
+
+// Protected route wrapper
+const ProtectedRoute = ({ children, requiredRole }) => {
+  const { user, loading } = useAppContext();
+  
+  if (loading) {
+    return <div className="h-screen flex items-center justify-center">Loading...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/" />;
+  }
+  
+  return children;
+};
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-center text-gray-900 mb-8">
-          MERN Stack App with Vite and Tailwind
-        </h1>
-        <PostForm />
-      </div>
-    </div>
-  )
+    <AppProvider>
+      <Router>
+        <div className="flex flex-col min-h-screen">
+          <Navbar />
+          <Alert />
+          <main className="flex-grow">
+            <Routes>
+              {/* Public routes */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/products/:id" element={<ProductDetailPage />} />
+              
+              {/* Protected routes - User */}
+              <Route path="/cart" element={
+                <ProtectedRoute>
+                  <CartPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/checkout" element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/orders" element={
+                <ProtectedRoute>
+                  <OrdersPage />
+                </ProtectedRoute>
+              } />
+              
+              {/* Protected routes - Admin */}
+              <Route path="/admin/users" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminUsersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/products" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminProductsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/orders" element={
+                <ProtectedRoute requiredRole="admin">
+                  <AdminOrdersPage />
+                </ProtectedRoute>
+              } />
+              
+              {/* 404 page */}
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </AppProvider>
+  );
 }
 
-export default App
+export default App;
