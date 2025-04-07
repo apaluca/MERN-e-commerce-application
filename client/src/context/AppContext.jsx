@@ -41,7 +41,18 @@ export const AppProvider = ({ children }) => {
       }
       
       const res = await API.get('/auth/me');
-      setUser(res.data);
+      
+      // Add logging to debug user data
+      console.log('User data from API:', res.data);
+      
+      // Ensure we're setting the complete user data with the correct structure
+      setUser({
+        ...res.data,
+        // Ensure active is a boolean
+        active: res.data.active === true,
+        // Ensure createdAt is a valid date string
+        createdAt: res.data.createdAt ? res.data.createdAt : null
+      });
       
       // Load cart if user is authenticated
       if (res.data) {

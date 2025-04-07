@@ -5,7 +5,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const { auth } = require("../middleware/auth");
 
-// Login user - simplified approach
+// Login user
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -46,7 +46,7 @@ router.post("/login", async (req, res) => {
 
     console.log(`Login successful for: ${email} with role: ${user.role}`);
 
-    // Send response
+    // Send response with ALL necessary user fields
     res.json({
       token,
       user: {
@@ -54,6 +54,8 @@ router.post("/login", async (req, res) => {
         username: user.username,
         email: user.email,
         role: user.role,
+        active: user.active,
+        createdAt: user.createdAt
       },
     });
   } catch (error) {
@@ -112,7 +114,25 @@ router.post("/register", async (req, res) => {
 // Get current user
 router.get("/me", auth, async (req, res) => {
   try {
-    res.json(req.user);
+    // Instead of returning req.user directly, fetch the full user with all fields
+    const user = await User.findById(req.user._id)
+      .select("-password")
+      .lean() // Use lean() for better performance and to ensure proper JSON conversion
+      .exec();
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Explicitly structure the response to ensure all fields are included
+    res.json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      active: user.active,
+      createdAt: user.createdAt
+    });
   } catch (error) {
     console.error("Get current user error:", error);
     res.status(500).json({ message: error.message });

@@ -314,7 +314,7 @@ const ProfilePage = () => {
           </form>
         </div>
         
-        {/* Order Summary */}
+        {/* Account Summary */}
         <div className="bg-white rounded-lg shadow-sm p-6 md:col-span-2">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Account Summary</h2>
           
@@ -322,23 +322,25 @@ const ProfilePage = () => {
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Member Since</div>
               <div className="text-gray-800 font-medium">
-                {new Date(user.createdAt).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                {user.createdAt && !isNaN(new Date(user.createdAt).getTime()) 
+                  ? new Date(user.createdAt).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  : 'Not available'}
               </div>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Account Type</div>
-              <div className="text-gray-800 font-medium capitalize">{user.role}</div>
+              <div className="text-gray-800 font-medium capitalize">{user.role || 'user'}</div>
             </div>
-            
+
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Account Status</div>
-              <div className={`font-medium ${user.active ? 'text-green-600' : 'text-red-600'}`}>
-                {user.active ? 'Active' : 'Inactive'}
+              <div className={`font-medium ${user.active === true ? 'text-green-600' : 'text-red-600'}`}>
+                {user.active === true ? 'Active' : 'Inactive'}
               </div>
             </div>
           </div>

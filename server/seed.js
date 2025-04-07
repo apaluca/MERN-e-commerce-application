@@ -203,6 +203,8 @@ const seedDatabase = async (clearDB = false) => {
 
         createdUsers.push(user);
         console.log(`User created: ${user.username} (${user.role})`);
+        console.log(`  - Active: ${user.active}`);
+        console.log(`  - Created At: ${user.createdAt}`);
       } else {
         // For existing users, ensure password is correctly hashed and update fields
         let needsUpdate = false;
