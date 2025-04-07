@@ -72,7 +72,7 @@ router.post("/", auth, async (req, res) => {
 
     // Get user's cart
     const cart = await Cart.findOne({ user: req.user._id }).populate(
-      "items.product"
+      "items.product",
     );
 
     if (!cart || cart.items.length === 0) {
@@ -148,7 +148,7 @@ router.put("/:id/status", auth, authorize("admin"), async (req, res) => {
 
     if (
       !["pending", "processing", "shipped", "delivered", "cancelled"].includes(
-        status
+        status,
       )
     ) {
       return res.status(400).json({ message: "Invalid status" });

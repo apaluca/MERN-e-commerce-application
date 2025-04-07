@@ -55,7 +55,7 @@ router.post("/login", async (req, res) => {
         email: user.email,
         role: user.role,
         active: user.active,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
       },
     });
   } catch (error) {
@@ -119,11 +119,11 @@ router.get("/me", auth, async (req, res) => {
       .select("-password")
       .lean() // Use lean() for better performance and to ensure proper JSON conversion
       .exec();
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
     // Explicitly structure the response to ensure all fields are included
     res.json({
       _id: user._id,
@@ -131,7 +131,7 @@ router.get("/me", auth, async (req, res) => {
       email: user.email,
       role: user.role,
       active: user.active,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     });
   } catch (error) {
     console.error("Get current user error:", error);
@@ -143,14 +143,14 @@ router.get("/me", auth, async (req, res) => {
 router.put("/profile", auth, async (req, res) => {
   try {
     const { username, email, currentPassword, newPassword } = req.body;
-    
+
     // Get current user from database to ensure we have the latest data
     const user = await User.findById(req.user._id);
-    
+
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    
+
     // Check if username already exists (if changed)
     if (username !== user.username) {
       const existingUser = await User.findOne({ username });
@@ -158,7 +158,7 @@ router.put("/profile", auth, async (req, res) => {
         return res.status(400).json({ message: "Username already taken" });
       }
     }
-    
+
     // Check if email already exists (if changed)
     if (email !== user.email) {
       const existingUser = await User.findOne({ email });
@@ -166,35 +166,37 @@ router.put("/profile", auth, async (req, res) => {
         return res.status(400).json({ message: "Email already in use" });
       }
     }
-    
+
     // Update fields
     user.username = username;
     user.email = email;
-    
+
     // If changing password
     if (newPassword) {
       // Verify current password
       const isMatch = await bcrypt.compare(currentPassword, user.password);
-      
+
       if (!isMatch) {
-        return res.status(400).json({ message: "Current password is incorrect" });
+        return res
+          .status(400)
+          .json({ message: "Current password is incorrect" });
       }
-      
+
       // Hash new password
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(newPassword, salt);
     }
-    
+
     // Save user
     await user.save();
-    
+
     // Return updated user data without password
     res.json({
       id: user._id,
       username: user.username,
       email: user.email,
       role: user.role,
-      active: user.active
+      active: user.active,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -205,7 +207,7 @@ router.put("/profile", auth, async (req, res) => {
 router.put("/address", auth, async (req, res) => {
   try {
     const { street, city, postalCode, country } = req.body;
-    
+
     // In a real app, we'd update or create an address record
     // For now, we'll just return success
     res.json({ message: "Address updated successfully" });

@@ -1,26 +1,26 @@
-import { useState, useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useState, useEffect } from "react";
+import { useAppContext } from "../context/AppContext";
 
 const ProfilePage = () => {
   const { user, API, setError } = useAppContext();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  
+  const [success, setSuccess] = useState("");
+
   // Profile form state
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
+    username: "",
+    email: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   // Address form state (for future shipping address saving)
   const [addressData, setAddressData] = useState({
-    street: '',
-    city: '',
-    postalCode: '',
-    country: ''
+    street: "",
+    city: "",
+    postalCode: "",
+    country: "",
   });
 
   // Load user data
@@ -28,8 +28,8 @@ const ProfilePage = () => {
     if (user) {
       setFormData({
         ...formData,
-        username: user.username || '',
-        email: user.email || ''
+        username: user.username || "",
+        email: user.email || "",
       });
     }
   }, [user]);
@@ -38,7 +38,7 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
@@ -46,61 +46,61 @@ const ProfilePage = () => {
     const { name, value } = e.target;
     setAddressData({
       ...addressData,
-      [name]: value
+      [name]: value,
     });
   };
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Reset success message
-    setSuccess('');
-    
+    setSuccess("");
+
     // Validate passwords if user is trying to change password
     if (formData.newPassword) {
       if (!formData.currentPassword) {
-        setError('Current password is required to set a new password');
+        setError("Current password is required to set a new password");
         return;
       }
-      
+
       if (formData.newPassword.length < 6) {
-        setError('New password must be at least 6 characters long');
+        setError("New password must be at least 6 characters long");
         return;
       }
-      
+
       if (formData.newPassword !== formData.confirmPassword) {
-        setError('New passwords do not match');
+        setError("New passwords do not match");
         return;
       }
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Only include password fields if user is changing password
       const profileData = {
         username: formData.username,
-        email: formData.email
+        email: formData.email,
       };
-      
+
       if (formData.newPassword) {
         profileData.currentPassword = formData.currentPassword;
         profileData.newPassword = formData.newPassword;
       }
-      
-      await API.put('/auth/profile', profileData);
-      
+
+      await API.put("/auth/profile", profileData);
+
       // Clear password fields
       setFormData({
         ...formData,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
-      
-      setSuccess('Profile updated successfully');
+
+      setSuccess("Profile updated successfully");
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile');
+      setError(err.response?.data?.message || "Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -108,17 +108,17 @@ const ProfilePage = () => {
 
   const handleAddressSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Reset success message
-    setSuccess('');
-    
+    setSuccess("");
+
     setLoading(true);
-    
+
     try {
-      await API.put('/auth/address', addressData);
-      setSuccess('Address updated successfully');
+      await API.put("/auth/address", addressData);
+      setSuccess("Address updated successfully");
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update address');
+      setError(err.response?.data?.message || "Failed to update address");
     } finally {
       setLoading(false);
     }
@@ -137,21 +137,26 @@ const ProfilePage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-2xl font-bold text-gray-800 mb-8">My Profile</h1>
-      
+
       {success && (
         <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-md">
           {success}
         </div>
       )}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Profile Information */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Account Information</h2>
-          
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Account Information
+          </h2>
+
           <form onSubmit={handleProfileSubmit}>
             <div className="mb-4">
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Username
               </label>
               <input
@@ -164,9 +169,12 @@ const ProfilePage = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email Address
               </label>
               <input
@@ -179,11 +187,16 @@ const ProfilePage = () => {
                 required
               />
             </div>
-            
-            <h3 className="text-md font-medium text-gray-800 mt-6 mb-3">Change Password</h3>
-            
+
+            <h3 className="text-md font-medium text-gray-800 mt-6 mb-3">
+              Change Password
+            </h3>
+
             <div className="mb-4">
-              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="currentPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Current Password
               </label>
               <input
@@ -195,9 +208,12 @@ const ProfilePage = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <div className="mb-4">
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="newPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 New Password
               </label>
               <input
@@ -212,9 +228,12 @@ const ProfilePage = () => {
                 Leave blank if you don't want to change your password.
               </p>
             </div>
-            
+
             <div className="mb-6">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Confirm New Password
               </label>
               <input
@@ -226,24 +245,29 @@ const ProfilePage = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
               disabled={loading}
             >
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </form>
         </div>
-        
+
         {/* Default Shipping Address */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Default Shipping Address</h2>
-          
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Default Shipping Address
+          </h2>
+
           <form onSubmit={handleAddressSubmit}>
             <div className="mb-4">
-              <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="street"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Street Address
               </label>
               <input
@@ -256,9 +280,12 @@ const ProfilePage = () => {
                 required
               />
             </div>
-            
+
             <div className="mb-4">
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="city"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 City
               </label>
               <input
@@ -271,10 +298,13 @@ const ProfilePage = () => {
                 required
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
-                <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="postalCode"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Postal Code
                 </label>
                 <input
@@ -287,9 +317,12 @@ const ProfilePage = () => {
                   required
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="country"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Country
                 </label>
                 <input
@@ -303,44 +336,50 @@ const ProfilePage = () => {
                 />
               </div>
             </div>
-            
+
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
               disabled={loading}
             >
-              {loading ? 'Saving...' : 'Save Address'}
+              {loading ? "Saving..." : "Save Address"}
             </button>
           </form>
         </div>
-        
+
         {/* Account Summary */}
         <div className="bg-white rounded-lg shadow-sm p-6 md:col-span-2">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Account Summary</h2>
-          
+          <h2 className="text-lg font-medium text-gray-900 mb-4">
+            Account Summary
+          </h2>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Member Since</div>
               <div className="text-gray-800 font-medium">
-                {user.createdAt && !isNaN(new Date(user.createdAt).getTime()) 
+                {user.createdAt && !isNaN(new Date(user.createdAt).getTime())
                   ? new Date(user.createdAt).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
                     })
-                  : 'Not available'}
+                  : "Not available"}
               </div>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Account Type</div>
-              <div className="text-gray-800 font-medium capitalize">{user.role || 'user'}</div>
+              <div className="text-gray-800 font-medium capitalize">
+                {user.role || "user"}
+              </div>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Account Status</div>
-              <div className={`font-medium ${user.active === true ? 'text-green-600' : 'text-red-600'}`}>
-                {user.active === true ? 'Active' : 'Inactive'}
+              <div
+                className={`font-medium ${user.active === true ? "text-green-600" : "text-red-600"}`}
+              >
+                {user.active === true ? "Active" : "Inactive"}
               </div>
             </div>
           </div>

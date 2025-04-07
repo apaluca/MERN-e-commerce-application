@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 
 const Navbar = () => {
   const { user, cart, logout } = useAppContext();
@@ -19,18 +19,18 @@ const Navbar = () => {
 
     // Add event listener when dropdown is open
     if (isAdminDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     // Cleanup event listener
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isAdminDropdownOpen]);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const toggleAdminDropdown = () => {
@@ -50,63 +50,75 @@ const Navbar = () => {
                 <Link to="/" className="px-3 py-2 rounded-md hover:bg-gray-700">
                   Home
                 </Link>
-                <Link to="/products" className="px-3 py-2 rounded-md hover:bg-gray-700">
+                <Link
+                  to="/products"
+                  className="px-3 py-2 rounded-md hover:bg-gray-700"
+                >
                   Products
                 </Link>
                 {user && (
-                  <Link to="/orders" className="px-3 py-2 rounded-md hover:bg-gray-700">
+                  <Link
+                    to="/orders"
+                    className="px-3 py-2 rounded-md hover:bg-gray-700"
+                  >
                     My Orders
                   </Link>
                 )}
                 {user && (
-                  <Link to="/profile" className="px-3 py-2 rounded-md hover:bg-gray-700">
+                  <Link
+                    to="/profile"
+                    className="px-3 py-2 rounded-md hover:bg-gray-700"
+                  >
                     Profile
                   </Link>
                 )}
-                {user && user.role === 'admin' && (
+                {user && user.role === "admin" && (
                   <div className="relative" ref={dropdownRef}>
-                    <button 
+                    <button
                       className="px-3 py-2 rounded-md hover:bg-gray-700 focus:outline-none"
                       onClick={toggleAdminDropdown}
                       aria-expanded={isAdminDropdownOpen}
                     >
                       Admin
-                      <svg 
-                        className={`ml-1 inline-block h-4 w-4 transition-transform ${isAdminDropdownOpen ? 'transform rotate-180' : ''}`}
-                        fill="none" 
-                        viewBox="0 0 24 24" 
+                      <svg
+                        className={`ml-1 inline-block h-4 w-4 transition-transform ${isAdminDropdownOpen ? "transform rotate-180" : ""}`}
+                        fill="none"
+                        viewBox="0 0 24 24"
                         stroke="currentColor"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     </button>
                     {isAdminDropdownOpen && (
-                      <div 
-                        className="absolute z-10 bg-gray-800 text-white mt-2 rounded-md shadow-lg py-1 min-w-max"
-                      >
-                        <Link 
-                          to="/admin/dashboard" 
+                      <div className="absolute z-10 bg-gray-800 text-white mt-2 rounded-md shadow-lg py-1 min-w-max">
+                        <Link
+                          to="/admin/dashboard"
                           className="block px-4 py-2 hover:bg-gray-700 whitespace-nowrap"
                           onClick={() => setIsAdminDropdownOpen(false)}
                         >
                           Dashboard
                         </Link>
-                        <Link 
-                          to="/admin/users" 
+                        <Link
+                          to="/admin/users"
                           className="block px-4 py-2 hover:bg-gray-700 whitespace-nowrap"
                           onClick={() => setIsAdminDropdownOpen(false)}
                         >
                           Manage Users
                         </Link>
-                        <Link 
-                          to="/admin/products" 
+                        <Link
+                          to="/admin/products"
                           className="block px-4 py-2 hover:bg-gray-700 whitespace-nowrap"
                           onClick={() => setIsAdminDropdownOpen(false)}
                         >
                           Manage Products
                         </Link>
-                        <Link 
-                          to="/admin/orders" 
+                        <Link
+                          to="/admin/orders"
                           className="block px-4 py-2 hover:bg-gray-700 whitespace-nowrap"
                           onClick={() => setIsAdminDropdownOpen(false)}
                         >
@@ -123,7 +135,10 @@ const Navbar = () => {
             <div className="flex items-center">
               {user ? (
                 <>
-                  <Link to="/cart" className="relative px-3 py-2 rounded-md hover:bg-gray-700 mr-2">
+                  <Link
+                    to="/cart"
+                    className="relative px-3 py-2 rounded-md hover:bg-gray-700 mr-2"
+                  >
                     Cart
                     {cart.items.length > 0 && (
                       <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-blue-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -143,10 +158,16 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="px-3 py-2 rounded-md hover:bg-gray-700">
+                  <Link
+                    to="/login"
+                    className="px-3 py-2 rounded-md hover:bg-gray-700"
+                  >
                     Login
                   </Link>
-                  <Link to="/register" className="ml-2 px-3 py-2 bg-blue-500 rounded-md hover:bg-blue-600">
+                  <Link
+                    to="/register"
+                    className="ml-2 px-3 py-2 bg-blue-500 rounded-md hover:bg-blue-600"
+                  >
                     Register
                   </Link>
                 </>
@@ -155,7 +176,10 @@ const Navbar = () => {
           </div>
           <div className="md:hidden flex items-center">
             {user && (
-              <Link to="/cart" className="relative px-3 py-2 rounded-md hover:bg-gray-700 mr-2">
+              <Link
+                to="/cart"
+                className="relative px-3 py-2 rounded-md hover:bg-gray-700 mr-2"
+              >
                 Cart
                 {cart.items.length > 0 && (
                   <span className="absolute top-0 right-0 -mt-1 -mr-1 bg-blue-500 text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -168,17 +192,27 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-700 focus:outline-none"
             >
-              <svg 
-                className="h-6 w-6" 
-                xmlns="http://www.w3.org/2000/svg" 
-                fill="none" 
-                viewBox="0 0 24 24" 
+              <svg
+                className="h-6 w-6"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
                 {isMenuOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 )}
               </svg>
             </button>
@@ -190,14 +224,14 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link 
+            <Link
               to="/"
               className="block px-3 py-2 rounded-md hover:bg-gray-700"
               onClick={() => setIsMenuOpen(false)}
             >
               Home
             </Link>
-            <Link 
+            <Link
               to="/products"
               className="block px-3 py-2 rounded-md hover:bg-gray-700"
               onClick={() => setIsMenuOpen(false)}
@@ -205,7 +239,7 @@ const Navbar = () => {
               Products
             </Link>
             {user && (
-              <Link 
+              <Link
                 to="/orders"
                 className="block px-3 py-2 rounded-md hover:bg-gray-700"
                 onClick={() => setIsMenuOpen(false)}
@@ -214,7 +248,7 @@ const Navbar = () => {
               </Link>
             )}
             {user && (
-              <Link 
+              <Link
                 to="/profile"
                 className="block px-3 py-2 rounded-md hover:bg-gray-700"
                 onClick={() => setIsMenuOpen(false)}
@@ -222,32 +256,32 @@ const Navbar = () => {
                 My Profile
               </Link>
             )}
-            {user && user.role === 'admin' && (
+            {user && user.role === "admin" && (
               <>
                 <div className="border-t border-gray-700 my-2 py-1"></div>
                 <p className="px-3 py-1 text-sm text-gray-400">Admin Panel</p>
-                <Link 
+                <Link
                   to="/admin/dashboard"
                   className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
-                <Link 
+                <Link
                   to="/admin/users"
                   className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Manage Users
                 </Link>
-                <Link 
+                <Link
                   to="/admin/products"
                   className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Manage Products
                 </Link>
-                <Link 
+                <Link
                   to="/admin/orders"
                   className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"
                   onClick={() => setIsMenuOpen(false)}
@@ -275,14 +309,14 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="px-2 space-y-1">
-                <Link 
+                <Link
                   to="/login"
                   className="block px-3 py-2 rounded-md hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Login
                 </Link>
-                <Link 
+                <Link
                   to="/register"
                   className="block px-3 py-2 bg-blue-500 rounded-md hover:bg-blue-600 mt-1"
                   onClick={() => setIsMenuOpen(false)}

@@ -1,18 +1,18 @@
-import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 
 const ProductCard = ({ product, handleAddToCart, user }) => {
   // Get main image and any additional images
   const mainImage = product.imageUrl;
   const hasMultipleImages = product.images && product.images.length > 0;
-  
+
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow">
       <Link to={`/products/${product._id}`} className="block relative">
-        <img 
-          src={mainImage} 
-          alt={product.name} 
+        <img
+          src={mainImage}
+          alt={product.name}
           className="w-full h-48 object-cover"
         />
         {hasMultipleImages && (
@@ -23,14 +23,24 @@ const ProductCard = ({ product, handleAddToCart, user }) => {
       </Link>
       <div className="p-4">
         <Link to={`/products/${product._id}`} className="hover:text-blue-500">
-          <h3 className="font-semibold text-lg mb-2 text-gray-800">{product.name}</h3>
+          <h3 className="font-semibold text-lg mb-2 text-gray-800">
+            {product.name}
+          </h3>
         </Link>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {product.description}
+        </p>
         <div className="flex items-center justify-between">
-          <span className="text-gray-800 font-bold">${product.price.toFixed(2)}</span>
+          <span className="text-gray-800 font-bold">
+            ${product.price.toFixed(2)}
+          </span>
           <div className="flex items-center">
-            <span className={`text-sm mr-2 ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {product.stock > 0 ? `In Stock (${product.stock})` : 'Out of Stock'}
+            <span
+              className={`text-sm mr-2 ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}
+            >
+              {product.stock > 0
+                ? `In Stock (${product.stock})`
+                : "Out of Stock"}
             </span>
             {user && product.stock > 0 ? (
               <button
@@ -54,25 +64,31 @@ const ProductCard = ({ product, handleAddToCart, user }) => {
   );
 };
 
-const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onItemsPerPageChange }) => {
+const Pagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+  itemsPerPage,
+  onItemsPerPageChange,
+}) => {
   const pageNumbers = [];
-  
+
   // Create page number array based on total pages
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);
   }
-  
+
   // Calculate start/end for visible page numbers (show 5 at a time)
   let startPage = Math.max(1, currentPage - 2);
   let endPage = Math.min(totalPages, startPage + 4);
-  
+
   // Adjust if we're near the end
   if (endPage - startPage < 4) {
     startPage = Math.max(1, endPage - 4);
   }
-  
+
   const visiblePageNumbers = pageNumbers.slice(startPage - 1, endPage);
-  
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center mt-8 bg-white p-4 rounded-lg shadow-sm">
       <div className="mb-4 sm:mb-0">
@@ -91,7 +107,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
           <option value={48}>48</option>
         </select>
       </div>
-      
+
       <div className="flex items-center">
         <button
           onClick={() => onPageChange(1)}
@@ -100,7 +116,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
         >
           &laquo;
         </button>
-        
+
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -108,7 +124,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
         >
           &lsaquo;
         </button>
-        
+
         {startPage > 1 && (
           <>
             <button
@@ -120,21 +136,21 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
             {startPage > 2 && <span className="mx-1">...</span>}
           </>
         )}
-        
-        {visiblePageNumbers.map(number => (
+
+        {visiblePageNumbers.map((number) => (
           <button
             key={number}
             onClick={() => onPageChange(number)}
             className={`px-3 py-1 mx-1 border rounded text-sm ${
               currentPage === number
-                ? 'bg-blue-500 text-white border-blue-500'
-                : 'border-gray-300 hover:bg-gray-100'
+                ? "bg-blue-500 text-white border-blue-500"
+                : "border-gray-300 hover:bg-gray-100"
             }`}
           >
             {number}
           </button>
         ))}
-        
+
         {endPage < totalPages && (
           <>
             {endPage < totalPages - 1 && <span className="mx-1">...</span>}
@@ -146,7 +162,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
             </button>
           </>
         )}
-        
+
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
@@ -154,7 +170,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
         >
           &rsaquo;
         </button>
-        
+
         <button
           onClick={() => onPageChange(totalPages)}
           disabled={currentPage === totalPages}
@@ -163,7 +179,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, itemsPerPage, onIte
           &raquo;
         </button>
       </div>
-      
+
       <div className="hidden sm:block text-sm text-gray-500">
         Page {currentPage} of {totalPages}
       </div>
@@ -176,55 +192,55 @@ const ProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [sortBy, setSortBy] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [sortBy, setSortBy] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  
+
   useEffect(() => {
     // Get query parameters
     const queryParams = new URLSearchParams(location.search);
-    const categoryParam = queryParams.get('category');
-    const pageParam = queryParams.get('page');
-    const perPageParam = queryParams.get('perPage');
-    const searchParam = queryParams.get('search');
-    const sortParam = queryParams.get('sort');
-    const minPriceParam = queryParams.get('minPrice');
-    const maxPriceParam = queryParams.get('maxPrice');
-    
+    const categoryParam = queryParams.get("category");
+    const pageParam = queryParams.get("page");
+    const perPageParam = queryParams.get("perPage");
+    const searchParam = queryParams.get("search");
+    const sortParam = queryParams.get("sort");
+    const minPriceParam = queryParams.get("minPrice");
+    const maxPriceParam = queryParams.get("maxPrice");
+
     // Apply params if they exist
     if (categoryParam) {
       setSelectedCategory(categoryParam);
     }
-    
+
     if (pageParam && !isNaN(parseInt(pageParam))) {
       setCurrentPage(parseInt(pageParam));
     }
-    
+
     if (perPageParam && !isNaN(parseInt(perPageParam))) {
       setItemsPerPage(parseInt(perPageParam));
     }
-    
+
     if (searchParam) {
       setSearchQuery(searchParam);
     }
-    
+
     if (sortParam) {
       setSortBy(sortParam);
     }
-    
+
     if (minPriceParam) {
-      setPriceRange(prev => ({ ...prev, min: minPriceParam }));
+      setPriceRange((prev) => ({ ...prev, min: minPriceParam }));
     }
-    
+
     if (maxPriceParam) {
-      setPriceRange(prev => ({ ...prev, max: maxPriceParam }));
+      setPriceRange((prev) => ({ ...prev, max: maxPriceParam }));
     }
   }, [location.search]);
 
@@ -233,23 +249,27 @@ const ProductsPage = () => {
       try {
         setLoading(true);
         // Get all products for client-side filtering
-        const response = await API.get('/products');
-        
+        const response = await API.get("/products");
+
         // Now, response.data has a structure with products and pagination
         if (response.data && response.data.products) {
           setProducts(response.data.products);
-          
+
           // Extract unique categories from the products array
-          const uniqueCategories = [...new Set(response.data.products.map(product => product.category))];
+          const uniqueCategories = [
+            ...new Set(
+              response.data.products.map((product) => product.category),
+            ),
+          ];
           setCategories(uniqueCategories);
         } else {
-          console.error('Unexpected API response format:', response.data);
-          setError('Received an unexpected response format from the server');
+          console.error("Unexpected API response format:", response.data);
+          setError("Received an unexpected response format from the server");
           setProducts([]);
         }
       } catch (error) {
-        console.error('Error fetching products:', error);
-        setError('Failed to load products.');
+        console.error("Error fetching products:", error);
+        setError("Failed to load products.");
         setProducts([]);
       } finally {
         setLoading(false);
@@ -262,78 +282,91 @@ const ProductsPage = () => {
   // Update URL with current filters and pagination
   useEffect(() => {
     const queryParams = new URLSearchParams();
-    
+
     if (selectedCategory) {
-      queryParams.set('category', selectedCategory);
+      queryParams.set("category", selectedCategory);
     }
-    
+
     if (currentPage > 1) {
-      queryParams.set('page', currentPage.toString());
+      queryParams.set("page", currentPage.toString());
     }
-    
-    if (itemsPerPage !== 12) { // Default value
-      queryParams.set('perPage', itemsPerPage.toString());
+
+    if (itemsPerPage !== 12) {
+      // Default value
+      queryParams.set("perPage", itemsPerPage.toString());
     }
-    
+
     if (searchQuery) {
-      queryParams.set('search', searchQuery);
+      queryParams.set("search", searchQuery);
     }
-    
+
     if (sortBy) {
-      queryParams.set('sort', sortBy);
+      queryParams.set("sort", sortBy);
     }
-    
+
     if (priceRange.min) {
-      queryParams.set('minPrice', priceRange.min);
+      queryParams.set("minPrice", priceRange.min);
     }
-    
+
     if (priceRange.max) {
-      queryParams.set('maxPrice', priceRange.max);
+      queryParams.set("maxPrice", priceRange.max);
     }
-    
+
     const queryString = queryParams.toString();
-    const newUrl = queryString ? `?${queryString}` : '';
-    
+    const newUrl = queryString ? `?${queryString}` : "";
+
     // Replace state to avoid pushing a new history entry for each filter change
     navigate(`/products${newUrl}`, { replace: true });
-  }, [navigate, selectedCategory, currentPage, itemsPerPage, searchQuery, sortBy, priceRange]);
+  }, [
+    navigate,
+    selectedCategory,
+    currentPage,
+    itemsPerPage,
+    searchQuery,
+    sortBy,
+    priceRange,
+  ]);
 
   const handleAddToCart = async (productId) => {
     if (!user) {
-      setError('Please login to add items to cart');
+      setError("Please login to add items to cart");
       return;
     }
-    
+
     const result = await addToCart(productId, 1);
     if (result.success) {
-      navigate('/cart'); // Redirect to cart on success
+      navigate("/cart"); // Redirect to cart on success
     }
   };
 
   // Filter products
   const filteredProducts = products
-    .filter(product => !selectedCategory || product.category === selectedCategory)
-    .filter(product => 
-      !searchQuery || 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter(
+      (product) => !selectedCategory || product.category === selectedCategory,
     )
-    .filter(product => 
-      (!priceRange.min || product.price >= parseFloat(priceRange.min)) && 
-      (!priceRange.max || product.price <= parseFloat(priceRange.max))
+    .filter(
+      (product) =>
+        !searchQuery ||
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .filter(
+      (product) =>
+        (!priceRange.min || product.price >= parseFloat(priceRange.min)) &&
+        (!priceRange.max || product.price <= parseFloat(priceRange.max)),
     );
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === 'price-asc') {
+    if (sortBy === "price-asc") {
       return a.price - b.price;
-    } else if (sortBy === 'price-desc') {
+    } else if (sortBy === "price-desc") {
       return b.price - a.price;
-    } else if (sortBy === 'name-asc') {
+    } else if (sortBy === "name-asc") {
       return a.name.localeCompare(b.name);
-    } else if (sortBy === 'name-desc') {
+    } else if (sortBy === "name-desc") {
       return b.name.localeCompare(a.name);
-    } else if (sortBy === 'newest') {
+    } else if (sortBy === "newest") {
       return new Date(b.createdAt) - new Date(a.createdAt);
     }
     return 0;
@@ -343,31 +376,34 @@ const ProductsPage = () => {
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
   const indexOfLastProduct = currentPage * itemsPerPage;
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
-  const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-  
+  const currentProducts = sortedProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct,
+  );
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedCategory, searchQuery, priceRange, sortBy]);
-  
+
   // Handle page change
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-  
+
   // Handle items per page change
   const handleItemsPerPageChange = (value) => {
     setItemsPerPage(value);
     setCurrentPage(1); // Reset to page 1 when changing items per page
   };
-  
+
   // Clear all filters
   const handleClearFilters = () => {
-    setSelectedCategory('');
-    setSortBy('');
-    setSearchQuery('');
-    setPriceRange({ min: '', max: '' });
+    setSelectedCategory("");
+    setSortBy("");
+    setSearchQuery("");
+    setPriceRange({ min: "", max: "" });
     setCurrentPage(1);
   };
 
@@ -375,7 +411,7 @@ const ProductsPage = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Products</h1>
-        
+
         <div className="mb-8">
           <div className="bg-white p-4 rounded-lg shadow-sm">
             <div className="md:flex md:justify-between md:items-center">
@@ -389,7 +425,7 @@ const ProductsPage = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
-              
+
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                 {/* Category Filter */}
                 <select
@@ -404,7 +440,7 @@ const ProductsPage = () => {
                     </option>
                   ))}
                 </select>
-                
+
                 {/* Sort Options */}
                 <select
                   value={sortBy}
@@ -420,17 +456,21 @@ const ProductsPage = () => {
                 </select>
               </div>
             </div>
-            
+
             {/* Price Range Filter */}
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Price Range</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  Price Range
+                </h3>
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"
                     placeholder="Min"
                     value={priceRange.min}
-                    onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
+                    onChange={(e) =>
+                      setPriceRange({ ...priceRange, min: e.target.value })
+                    }
                     className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <span>to</span>
@@ -438,29 +478,46 @@ const ProductsPage = () => {
                     type="number"
                     placeholder="Max"
                     value={priceRange.max}
-                    onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
+                    onChange={(e) =>
+                      setPriceRange({ ...priceRange, max: e.target.value })
+                    }
                     className="w-24 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
-              
+
               <div className="flex items-end justify-between">
                 <div className="text-sm text-gray-600">
                   <p>Showing {sortedProducts.length} products</p>
-                  {(selectedCategory || searchQuery || priceRange.min || priceRange.max || sortBy) && (
+                  {(selectedCategory ||
+                    searchQuery ||
+                    priceRange.min ||
+                    priceRange.max ||
+                    sortBy) && (
                     <p>
-                      {selectedCategory && <span className="mr-2">Category: {selectedCategory}</span>}
-                      {searchQuery && <span className="mr-2">Search: "{searchQuery}"</span>}
+                      {selectedCategory && (
+                        <span className="mr-2">
+                          Category: {selectedCategory}
+                        </span>
+                      )}
+                      {searchQuery && (
+                        <span className="mr-2">Search: "{searchQuery}"</span>
+                      )}
                       {(priceRange.min || priceRange.max) && (
                         <span className="mr-2">
-                          Price: {priceRange.min || '0'} - {priceRange.max || '∞'}
+                          Price: {priceRange.min || "0"} -{" "}
+                          {priceRange.max || "∞"}
                         </span>
                       )}
                     </p>
                   )}
                 </div>
-                
-                {(selectedCategory || searchQuery || priceRange.min || priceRange.max || sortBy) && (
+
+                {(selectedCategory ||
+                  searchQuery ||
+                  priceRange.min ||
+                  priceRange.max ||
+                  sortBy) && (
                   <button
                     onClick={handleClearFilters}
                     className="px-3 py-2 text-sm text-blue-600 hover:text-blue-800"
@@ -472,7 +529,7 @@ const ProductsPage = () => {
             </div>
           </div>
         </div>
-        
+
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="text-gray-500">Loading products...</div>
@@ -480,21 +537,23 @@ const ProductsPage = () => {
         ) : sortedProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-xl">No products found.</p>
-            <p className="text-gray-400 mt-2">Try changing your search criteria.</p>
+            <p className="text-gray-400 mt-2">
+              Try changing your search criteria.
+            </p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {currentProducts.map((product) => (
-                <ProductCard 
-                  key={product._id} 
-                  product={product} 
-                  handleAddToCart={handleAddToCart} 
-                  user={user} 
+                <ProductCard
+                  key={product._id}
+                  product={product}
+                  handleAddToCart={handleAddToCart}
+                  user={user}
                 />
               ))}
             </div>
-            
+
             {/* Pagination */}
             {totalPages > 1 && (
               <Pagination

@@ -1,5 +1,5 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
+import { useNavigate, Link } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 
 const CartPage = () => {
   const { cart, updateCartItem, removeFromCart, loading } = useAppContext();
@@ -15,7 +15,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    navigate('/checkout');
+    navigate("/checkout");
   };
 
   if (loading) {
@@ -28,8 +28,10 @@ const CartPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-2xl font-bold text-gray-800 mb-8">Your Shopping Cart</h1>
-      
+      <h1 className="text-2xl font-bold text-gray-800 mb-8">
+        Your Shopping Cart
+      </h1>
+
       {cart.items.length === 0 ? (
         <div className="bg-white rounded-lg shadow-sm p-6 text-center">
           <p className="text-gray-600 mb-4">Your cart is empty.</p>
@@ -46,19 +48,34 @@ const CartPage = () => {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Product
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Price
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Quantity
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Total
                   </th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     Actions
                   </th>
                 </tr>
@@ -69,11 +86,18 @@ const CartPage = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-12 w-12">
-                          <img className="h-12 w-12 object-cover rounded-md" src={item.product.imageUrl} alt={item.product.name} />
+                          <img
+                            className="h-12 w-12 object-cover rounded-md"
+                            src={item.product.imageUrl}
+                            alt={item.product.name}
+                          />
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            <Link to={`/products/${item.product._id}`} className="hover:text-blue-500">
+                            <Link
+                              to={`/products/${item.product._id}`}
+                              className="hover:text-blue-500"
+                            >
                               {item.product.name}
                             </Link>
                           </div>
@@ -81,13 +105,20 @@ const CartPage = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${item.price.toFixed(2)}</div>
+                      <div className="text-sm text-gray-900">
+                        ${item.price.toFixed(2)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <button
-                          onClick={() => handleQuantityChange(item.product._id, item.quantity - 1)}
-                          className="px-2 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200"
+                          onClick={() =>
+                            handleQuantityChange(
+                              item.product._id,
+                              item.quantity - 1,
+                            )
+                          }
+                          className="h-8 px-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200 flex items-center justify-center"
                           disabled={item.quantity <= 1}
                         >
                           -
@@ -95,20 +126,36 @@ const CartPage = () => {
                         <input
                           type="number"
                           value={item.quantity}
-                          onChange={(e) => handleQuantityChange(item.product._id, parseInt(e.target.value) || 1)}
-                          className="w-12 border-t border-b border-gray-300 px-2 py-1 text-center focus:outline-none"
+                          onChange={(e) =>
+                            handleQuantityChange(
+                              item.product._id,
+                              parseInt(e.target.value) || 1,
+                            )
+                          }
+                          className="h-8 w-12 border-t border-b border-gray-300 px-2 text-center focus:outline-none appearance-none"
                           min="1"
+                          style={{
+                            WebkitAppearance: "none",
+                            MozAppearance: "textfield",
+                          }}
                         />
                         <button
-                          onClick={() => handleQuantityChange(item.product._id, item.quantity + 1)}
-                          className="px-2 py-1 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200"
+                          onClick={() =>
+                            handleQuantityChange(
+                              item.product._id,
+                              item.quantity + 1,
+                            )
+                          }
+                          className="h-8 px-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200 flex items-center justify-center"
                         >
                           +
                         </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">${(item.price * item.quantity).toFixed(2)}</div>
+                      <div className="text-sm text-gray-900">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
@@ -123,12 +170,14 @@ const CartPage = () => {
               </tbody>
             </table>
           </div>
-          
+
           <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm text-gray-700">
-                  Subtotal ({cart.items.reduce((acc, item) => acc + item.quantity, 0)} items):
+                  Subtotal (
+                  {cart.items.reduce((acc, item) => acc + item.quantity, 0)}{" "}
+                  items):
                 </p>
                 <p className="text-lg font-semibold text-gray-900">
                   ${cart.total.toFixed(2)}

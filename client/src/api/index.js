@@ -4,7 +4,7 @@ const API = axios.create({ baseURL: "http://localhost:3000" });
 
 // Request interceptor to include the token in all requests
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -17,14 +17,17 @@ API.interceptors.response.use(
   (error) => {
     // Only redirect to login for auth errors with status 401
     // Exclude non-auth-related API errors
-    if (error.response && error.response.status === 401 && 
-        !error.config.url.includes('/products')) {
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !error.config.url.includes("/products")
+    ) {
       // Redirect to login (can be handled by app)
-      console.log('Authentication required. Please log in.');
-      window.location.href = '/login';
+      console.log("Authentication required. Please log in.");
+      window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // Auth API calls

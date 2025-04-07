@@ -570,7 +570,7 @@ const getRandomDate = () => {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   return new Date(
     thirtyDaysAgo.getTime() +
-      Math.random() * (now.getTime() - thirtyDaysAgo.getTime())
+      Math.random() * (now.getTime() - thirtyDaysAgo.getTime()),
   );
 };
 
@@ -623,7 +623,7 @@ const seedDatabase = async (clearDB = false) => {
         try {
           const isMatch = await bcrypt.compare(
             userData.password,
-            existingUser.password
+            existingUser.password,
           );
           if (!isMatch) {
             needsUpdate = true;
@@ -657,7 +657,7 @@ const seedDatabase = async (clearDB = false) => {
           console.log(`  - Created At: ${existingUser.createdAt}`);
         } else {
           console.log(
-            `User already exists with correct settings: ${existingUser.username} (${existingUser.role})`
+            `User already exists with correct settings: ${existingUser.username} (${existingUser.role})`,
           );
           console.log(`  - Active: ${existingUser.active}`);
           console.log(`  - Created At: ${existingUser.createdAt}`);
@@ -670,7 +670,7 @@ const seedDatabase = async (clearDB = false) => {
       const user = await User.findOne({ email: userData.email });
       const passwordValid = await bcrypt.compare(
         userData.password,
-        user.password
+        user.password,
       );
       if (passwordValid) {
         console.log(`✓ Password verification successful for ${user.username}`);
@@ -705,13 +705,13 @@ const seedDatabase = async (clearDB = false) => {
           await existingProduct.save();
           createdProducts.push(existingProduct);
           console.log(
-            `Product updated: ${existingProduct.name} (${existingProduct.category})`
+            `Product updated: ${existingProduct.name} (${existingProduct.category})`,
           );
         }
       } catch (error) {
         console.error(
           `Error creating/updating product ${productData.name}:`,
-          error
+          error,
         );
       }
     }
@@ -762,7 +762,7 @@ const seedDatabase = async (clearDB = false) => {
         // Calculate total
         const total = orderProducts.reduce(
           (sum, item) => sum + item.price * item.quantity,
-          0
+          0,
         );
 
         // Random status
@@ -786,12 +786,12 @@ const seedDatabase = async (clearDB = false) => {
         });
 
         console.log(
-          `Order created: ${order._id} (${status}) with ${numProducts} products`
+          `Order created: ${order._id} (${status}) with ${numProducts} products`,
         );
       }
     } else {
       console.log(
-        `${existingOrders} orders already exist for user ${regularUser.username}.`
+        `${existingOrders} orders already exist for user ${regularUser.username}.`,
       );
     }
 
@@ -803,7 +803,7 @@ const seedDatabase = async (clearDB = false) => {
       console.log(
         `${user.role.toUpperCase()}: Email: ${user.email}, Password: ${
           user.password
-        }`
+        }`,
       );
     }
     console.log("-----------------------\n");
