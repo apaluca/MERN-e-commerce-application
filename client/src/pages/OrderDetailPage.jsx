@@ -21,7 +21,15 @@ const OrderStatusStepper = ({ status }) => {
           <div className="flex items-center w-full">
             {steps.map((step, index) => (
               <div key={step} className="relative flex-1 flex flex-col items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                {/* Connector line */}
+                {index < steps.length - 1 && (
+                  <div className={`absolute top-5 left-1/2 w-full h-0.5 ${
+                    index < currentStepIndex ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}></div>
+                )}
+                
+                {/* Add z-10 to make the circle appear above the connector line */}
+                <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center ${
                   index <= currentStepIndex ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
                   {index + 1}
@@ -29,13 +37,6 @@ const OrderStatusStepper = ({ status }) => {
                 <div className="text-xs mt-2 text-center capitalize">
                   {step}
                 </div>
-                
-                {/* Connector line */}
-                {index < steps.length - 1 && (
-                  <div className={`absolute top-5 left-1/2 w-full h-0.5 ${
-                    index < currentStepIndex ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}></div>
-                )}
               </div>
             ))}
           </div>
