@@ -24,6 +24,7 @@ const cartRoutes = require("./routes/cart");
 const orderRoutes = require("./routes/orders");
 const adminRoutes = require("./routes/admin");
 const reviewRoutes = require("./routes/review");
+const paymentRoutes = require("./routes/payment");
 
 // API routes
 app.use("/auth", authRoutes);
@@ -32,6 +33,7 @@ app.use("/cart", cartRoutes);
 app.use("/orders", orderRoutes);
 app.use("/admin", adminRoutes);
 app.use("/reviews", reviewRoutes);
+app.use("/payment", paymentRoutes);
 
 // MongoDB Connection
 mongoose
@@ -49,6 +51,15 @@ if (!process.env.JWT_SECRET) {
   console.error("WARNING: JWT_SECRET is not defined in environment variables");
 } else {
   console.log("JWT_SECRET is properly configured");
+}
+
+// Check Stripe Secret Key
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.error(
+    "WARNING: STRIPE_SECRET_KEY is not defined in environment variables"
+  );
+} else {
+  console.log("STRIPE_SECRET_KEY is properly configured");
 }
 
 // Basic route

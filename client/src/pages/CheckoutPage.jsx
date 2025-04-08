@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import CreditCardForm from "../components/CreditCardForm";
 
 const CheckoutPage = () => {
   const { cart, createOrder, loading } = useAppContext();
@@ -16,6 +17,8 @@ const CheckoutPage = () => {
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentStep, setPaymentStep] = useState("shipping"); // shipping or payment
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
 
   if (cart.items.length === 0) {
     return (
@@ -45,7 +48,7 @@ const CheckoutPage = () => {
     }
   };
 
-  const validateForm = () => {
+  const validateShippingForm = () => {
     const newErrors = {};
 
     // Street validation
@@ -128,13 +131,58 @@ const CheckoutPage = () => {
     setErrors(newErrors);
   };
 
-  const handleSubmit = async (e) => {
+  const handleShippingSubmit = (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateShippingForm()) {
       return;
     }
 
+    // Move to payment step
+    setPaymentStep("payment");
+  };
+
+  const handlePaymentSuccess = async (paymentIntentId) => {
+    try {
+      setPaymentProcessing(true);
+
+      const shippingAddress = {
+        street: formData.street,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        country: formData.country,
+      };
+
+      const paymentDetails = {
+        paymentIntentId,
+        paymentStatus: "succeeded",
+      };
+
+      const result = await createOrder(
+        shippingAddress,
+        formData.paymentMethod,
+        paymentDetails
+      );
+
+      if (result.success) {
+        // Navigate to order confirmation with the order data
+        navigate("/order-confirmation", { state: { order: result.order } });
+      }
+    } catch (error) {
+      console.error("Error processing payment and creating order:", error);
+    } finally {
+      setPaymentProcessing(false);
+    }
+  };
+
+  const handlePaymentError = (errorMessage) => {
+    setErrors({ payment: errorMessage });
+    setPaymentProcessing(false);
+  };
+
+  // For cash on delivery option
+  const handleCashOnDeliverySubmit = async (e) => {
+    e.preventDefault();
     setIsSubmitting(true);
 
     try {
@@ -145,7 +193,7 @@ const CheckoutPage = () => {
         country: formData.country,
       };
 
-      const result = await createOrder(shippingAddress, formData.paymentMethod);
+      const result = await createOrder(shippingAddress, "cash_on_delivery");
 
       if (result.success) {
         // Navigate to order confirmation with the order data
@@ -165,182 +213,243 @@ const CheckoutPage = () => {
       <div className="md:flex md:space-x-8">
         <div className="md:w-2/3 mb-8 md:mb-0">
           <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Shipping Address
-            </h2>
-
-            <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 gap-y-4">
-                <div>
-                  <label
-                    htmlFor="street"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Street Address
-                  </label>
-                  <input
-                    type="text"
-                    id="street"
-                    name="street"
-                    value={formData.street}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur("street")}
-                    className={`mt-1 block w-full border ${errors.street ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                  />
-                  {errors.street && (
-                    <p className="mt-1 text-sm text-red-600">{errors.street}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="city"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    onBlur={() => handleBlur("city")}
-                    className={`mt-1 block w-full border ${errors.city ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                  />
-                  {errors.city && (
-                    <p className="mt-1 text-sm text-red-600">{errors.city}</p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="postalCode"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Postal Code
-                    </label>
-                    <input
-                      type="text"
-                      id="postalCode"
-                      name="postalCode"
-                      value={formData.postalCode}
-                      onChange={handleChange}
-                      onBlur={() => handleBlur("postalCode")}
-                      className={`mt-1 block w-full border ${errors.postalCode ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.postalCode && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.postalCode}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="country"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Country
-                    </label>
-                    <input
-                      type="text"
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleChange}
-                      onBlur={() => handleBlur("country")}
-                      className={`mt-1 block w-full border ${errors.country ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                    />
-                    {errors.country && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {errors.country}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8">
+            {paymentStep === "shipping" ? (
+              <>
                 <h2 className="text-lg font-medium text-gray-900 mb-4">
-                  Payment Method
+                  Shipping Address
                 </h2>
 
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <input
-                      id="credit_card"
-                      name="paymentMethod"
-                      type="radio"
-                      value="credit_card"
-                      checked={formData.paymentMethod === "credit_card"}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <label
-                      htmlFor="credit_card"
-                      className="ml-3 block text-sm font-medium text-gray-700"
-                    >
-                      Credit Card
-                    </label>
+                <form onSubmit={handleShippingSubmit}>
+                  <div className="grid grid-cols-1 gap-y-4">
+                    <div>
+                      <label
+                        htmlFor="street"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Street Address
+                      </label>
+                      <input
+                        type="text"
+                        id="street"
+                        name="street"
+                        value={formData.street}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur("street")}
+                        className={`mt-1 block w-full border ${errors.street ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.street && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.street}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="city"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        City
+                      </label>
+                      <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        onBlur={() => handleBlur("city")}
+                        className={`mt-1 block w-full border ${errors.city ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                      />
+                      {errors.city && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {errors.city}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          htmlFor="postalCode"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Postal Code
+                        </label>
+                        <input
+                          type="text"
+                          id="postalCode"
+                          name="postalCode"
+                          value={formData.postalCode}
+                          onChange={handleChange}
+                          onBlur={() => handleBlur("postalCode")}
+                          className={`mt-1 block w-full border ${errors.postalCode ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                        />
+                        {errors.postalCode && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.postalCode}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label
+                          htmlFor="country"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          id="country"
+                          name="country"
+                          value={formData.country}
+                          onChange={handleChange}
+                          onBlur={() => handleBlur("country")}
+                          className={`mt-1 block w-full border ${errors.country ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                        />
+                        {errors.country && (
+                          <p className="mt-1 text-sm text-red-600">
+                            {errors.country}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center">
-                    <input
-                      id="paypal"
-                      name="paymentMethod"
-                      type="radio"
-                      value="paypal"
-                      checked={formData.paymentMethod === "paypal"}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <label
-                      htmlFor="paypal"
-                      className="ml-3 block text-sm font-medium text-gray-700"
-                    >
-                      PayPal
-                    </label>
+                  <div className="mt-8">
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">
+                      Payment Method
+                    </h2>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center">
+                        <input
+                          id="credit_card"
+                          name="paymentMethod"
+                          type="radio"
+                          value="credit_card"
+                          checked={formData.paymentMethod === "credit_card"}
+                          onChange={handleChange}
+                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        />
+                        <label
+                          htmlFor="credit_card"
+                          className="ml-3 block text-sm font-medium text-gray-700"
+                        >
+                          Credit Card (Stripe)
+                        </label>
+                      </div>
+
+                      <div className="flex items-center">
+                        <input
+                          id="cash_on_delivery"
+                          name="paymentMethod"
+                          type="radio"
+                          value="cash_on_delivery"
+                          checked={
+                            formData.paymentMethod === "cash_on_delivery"
+                          }
+                          onChange={handleChange}
+                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                        />
+                        <label
+                          htmlFor="cash_on_delivery"
+                          className="ml-3 block text-sm font-medium text-gray-700"
+                        >
+                          Cash on Delivery
+                        </label>
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center">
-                    <input
-                      id="cash_on_delivery"
-                      name="paymentMethod"
-                      type="radio"
-                      value="cash_on_delivery"
-                      checked={formData.paymentMethod === "cash_on_delivery"}
-                      onChange={handleChange}
-                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                    />
-                    <label
-                      htmlFor="cash_on_delivery"
-                      className="ml-3 block text-sm font-medium text-gray-700"
+                  <div className="mt-8 flex justify-between">
+                    <Link
+                      to="/cart"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                     >
-                      Cash on Delivery
-                    </label>
+                      Back to Cart
+                    </Link>
+
+                    <button
+                      type="submit"
+                      className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      Continue to Payment
+                    </button>
                   </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-medium text-gray-900 mb-4">
+                  Payment Details
+                </h2>
+
+                <div className="mb-6 bg-gray-50 p-4 rounded-md">
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                    Shipping to:
+                  </h3>
+                  <p className="text-sm text-gray-800">
+                    {formData.street}
+                    <br />
+                    {formData.city}, {formData.postalCode}
+                    <br />
+                    {formData.country}
+                  </p>
                 </div>
-              </div>
 
-              <div className="mt-8 flex justify-between">
-                <Link
-                  to="/cart"
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                >
-                  Back to Cart
-                </Link>
+                {formData.paymentMethod === "credit_card" ? (
+                  <>
+                    <h3 className="text-md font-medium text-gray-800 mb-4">
+                      Credit Card Payment
+                    </h3>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting || loading}
-                  className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-                >
-                  {isSubmitting || loading ? "Processing..." : "Place Order"}
-                </button>
-              </div>
-            </form>
+                    {/* Display any payment errors */}
+                    {errors.payment && (
+                      <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+                        {errors.payment}
+                      </div>
+                    )}
+
+                    <CreditCardForm
+                      amount={cart.total}
+                      onPaymentSuccess={handlePaymentSuccess}
+                      onPaymentError={handlePaymentError}
+                      disabled={paymentProcessing || isSubmitting}
+                    />
+                  </>
+                ) : (
+                  <form onSubmit={handleCashOnDeliverySubmit}>
+                    <div className="bg-yellow-50 p-4 rounded-md mb-6">
+                      <p className="text-yellow-800">
+                        You will pay when your order is delivered. Please have
+                        the exact amount ready.
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || loading}
+                      className="w-full inline-flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      {isSubmitting || loading
+                        ? "Processing..."
+                        : "Place Order"}
+                    </button>
+                  </form>
+                )}
+
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentStep("shipping")}
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    ← Back to Shipping Information
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

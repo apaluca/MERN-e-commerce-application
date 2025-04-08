@@ -58,6 +58,17 @@ const OrderStatusStepper = ({ status }) => {
   );
 };
 
+const getPaymentMethodDisplayName = (method) => {
+  switch (method) {
+    case "credit_card":
+      return "Credit Card";
+    case "cash_on_delivery":
+      return "Cash on Delivery";
+    default:
+      return method;
+  }
+};
+
 const OrderDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -204,11 +215,7 @@ const OrderDetailPage = () => {
               </h3>
               <p className="text-gray-800">
                 <span className="font-medium">Method: </span>
-                {order.paymentMethod === "credit_card"
-                  ? "Credit Card"
-                  : order.paymentMethod === "paypal"
-                    ? "PayPal"
-                    : "Cash on Delivery"}
+                {getPaymentMethodDisplayName(order.paymentMethod)}
               </p>
               <p className="text-gray-800 mt-2">
                 <span className="font-medium">Total: </span>$

@@ -24,6 +24,17 @@ const OrderConfirmationPage = () => {
     );
   }
 
+  const getPaymentMethodDisplayName = (method) => {
+    switch (method) {
+      case "credit_card":
+        return "Credit Card";
+      case "cash_on_delivery":
+        return "Cash on Delivery";
+      default:
+        return method;
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="bg-white shadow-md rounded-lg p-6">
@@ -74,11 +85,7 @@ const OrderConfirmationPage = () => {
           <div className="flex justify-between">
             <span className="text-gray-600">Payment Method:</span>
             <span className="font-medium">
-              {order.paymentMethod === "credit_card"
-                ? "Credit Card"
-                : order.paymentMethod === "paypal"
-                  ? "PayPal"
-                  : "Cash on Delivery"}
+              {getPaymentMethodDisplayName(order.paymentMethod)}
             </span>
           </div>
         </div>

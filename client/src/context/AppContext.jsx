@@ -221,10 +221,25 @@ export const AppProvider = ({ children }) => {
   };
 
   // Create order
-  const createOrder = async (shippingAddress, paymentMethod) => {
+  const createOrder = async (
+    shippingAddress,
+    paymentMethod,
+    paymentDetails = null
+  ) => {
     try {
       setLoading(true);
-      const res = await API.post("/orders", { shippingAddress, paymentMethod });
+      const orderData = {
+        shippingAddress,
+        paymentMethod,
+      };
+
+      // Add payment details if provided
+      if (paymentDetails) {
+        orderData.paymentDetails = paymentDetails;
+      }
+
+      const res = await API.post("/orders", orderData);
+
       // Clear cart state since backend clears it
       setCart({ items: [], total: 0 });
       return { success: true, order: res.data };

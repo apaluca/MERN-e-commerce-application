@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAppContext } from "../../context/AppContext";
 
+const getPaymentMethodDisplayName = (method) => {
+  switch (method) {
+    case "credit_card":
+      return "Credit Card";
+    case "cash_on_delivery":
+      return "Cash on Delivery";
+    default:
+      return method;
+  }
+};
+
 const AdminOrdersPage = () => {
   const { API, setError } = useAppContext();
   const [orders, setOrders] = useState([]);
@@ -54,8 +65,8 @@ const AdminOrdersPage = () => {
         orders.map((order) =>
           order._id === selectedOrder._id
             ? { ...order, status: orderStatus }
-            : order,
-        ),
+            : order
+        )
       );
 
       handleCloseModal();
@@ -266,11 +277,7 @@ const AdminOrdersPage = () => {
                     Payment Method
                   </h4>
                   <p className="mt-1 text-sm text-gray-900">
-                    {selectedOrder.paymentMethod === "credit_card"
-                      ? "Credit Card"
-                      : selectedOrder.paymentMethod === "paypal"
-                        ? "PayPal"
-                        : "Cash on Delivery"}
+                    {getPaymentMethodDisplayName(selectedOrder.paymentMethod)}
                   </p>
                 </div>
 

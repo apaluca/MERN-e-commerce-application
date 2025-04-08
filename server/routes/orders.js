@@ -68,11 +68,11 @@ router.get("/:id", auth, async (req, res) => {
 // Create order
 router.post("/", auth, async (req, res) => {
   try {
-    const { shippingAddress, paymentMethod } = req.body;
+    const { shippingAddress, paymentMethod, paymentDetails } = req.body;
 
     // Get user's cart
     const cart = await Cart.findOne({ user: req.user._id }).populate(
-      "items.product",
+      "items.product"
     );
 
     if (!cart || cart.items.length === 0) {
@@ -107,15 +107,25 @@ router.post("/", auth, async (req, res) => {
       });
     }
 
-    // Create new order
-    const order = new Order({
+    // Create new order with optional payment details
+    const orderData = {
       user: req.user._id,
       items: orderItems,
       total: cart.total,
       shippingAddress,
       paymentMethod,
-    });
+      status: "pending",
+    };
 
+    // Add payment details if provided
+    if (paymentDetails) {
+      orderData.paymentDetails = {
+        paymentIntentId: paymentDetails.paymentIntentId,
+        paymentStatus: paymentDetails.paymentStatus || "succeeded",
+      };
+    }
+
+    const order = new Order(orderData);
     const createdOrder = await order.save();
 
     // Update product stock
@@ -148,7 +158,7 @@ router.put("/:id/status", auth, authorize("admin"), async (req, res) => {
 
     if (
       !["pending", "processing", "shipped", "delivered", "cancelled"].includes(
-        status,
+        status
       )
     ) {
       return res.status(400).json({ message: "Invalid status" });

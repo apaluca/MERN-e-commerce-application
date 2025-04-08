@@ -570,8 +570,18 @@ const getRandomDate = () => {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   return new Date(
     thirtyDaysAgo.getTime() +
-      Math.random() * (now.getTime() - thirtyDaysAgo.getTime()),
+      Math.random() * (now.getTime() - thirtyDaysAgo.getTime())
   );
+};
+
+// Generate a mock Stripe payment intent ID
+const generateMockPaymentIntentId = () => {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "pi_";
+  for (let i = 0; i < 24; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 };
 
 // Seed database function
@@ -623,7 +633,7 @@ const seedDatabase = async (clearDB = false) => {
         try {
           const isMatch = await bcrypt.compare(
             userData.password,
-            existingUser.password,
+            existingUser.password
           );
           if (!isMatch) {
             needsUpdate = true;
@@ -657,7 +667,7 @@ const seedDatabase = async (clearDB = false) => {
           console.log(`  - Created At: ${existingUser.createdAt}`);
         } else {
           console.log(
-            `User already exists with correct settings: ${existingUser.username} (${existingUser.role})`,
+            `User already exists with correct settings: ${existingUser.username} (${existingUser.role})`
           );
           console.log(`  - Active: ${existingUser.active}`);
           console.log(`  - Created At: ${existingUser.createdAt}`);
@@ -670,7 +680,7 @@ const seedDatabase = async (clearDB = false) => {
       const user = await User.findOne({ email: userData.email });
       const passwordValid = await bcrypt.compare(
         userData.password,
-        user.password,
+        user.password
       );
       if (passwordValid) {
         console.log(`✓ Password verification successful for ${user.username}`);
@@ -705,13 +715,13 @@ const seedDatabase = async (clearDB = false) => {
           await existingProduct.save();
           createdProducts.push(existingProduct);
           console.log(
-            `Product updated: ${existingProduct.name} (${existingProduct.category})`,
+            `Product updated: ${existingProduct.name} (${existingProduct.category})`
           );
         }
       } catch (error) {
         console.error(
           `Error creating/updating product ${productData.name}:`,
-          error,
+          error
         );
       }
     }
@@ -762,15 +772,20 @@ const seedDatabase = async (clearDB = false) => {
         // Calculate total
         const total = orderProducts.reduce(
           (sum, item) => sum + item.price * item.quantity,
-          0,
+          0
         );
 
         // Random status
         const statuses = ["pending", "processing", "shipped", "delivered"];
         const status = statuses[Math.floor(Math.random() * statuses.length)];
 
-        // Create the order with a random date in the past 30 days
-        const order = await Order.create({
+        // Randomly choose between credit_card and cash_on_delivery
+        const paymentMethods = ["credit_card", "cash_on_delivery"];
+        const paymentMethod =
+          paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+        // Create order object
+        const orderData = {
           user: regularUser._id,
           items: orderProducts,
           total: total,
@@ -780,18 +795,29 @@ const seedDatabase = async (clearDB = false) => {
             postalCode: "12345",
             country: "Country",
           },
-          paymentMethod: "credit_card",
+          paymentMethod: paymentMethod,
           status: status,
           createdAt: getRandomDate(),
-        });
+        };
+
+        // Add payment details for credit card orders
+        if (paymentMethod === "credit_card") {
+          orderData.paymentDetails = {
+            paymentIntentId: generateMockPaymentIntentId(),
+            paymentStatus: "succeeded",
+          };
+        }
+
+        // Create the order
+        const order = await Order.create(orderData);
 
         console.log(
-          `Order created: ${order._id} (${status}) with ${numProducts} products`,
+          `Order created: ${order._id} (${status}) with ${numProducts} products, payment: ${paymentMethod}`
         );
       }
     } else {
       console.log(
-        `${existingOrders} orders already exist for user ${regularUser.username}.`,
+        `${existingOrders} orders already exist for user ${regularUser.username}.`
       );
     }
 
@@ -803,7 +829,7 @@ const seedDatabase = async (clearDB = false) => {
       console.log(
         `${user.role.toUpperCase()}: Email: ${user.email}, Password: ${
           user.password
-        }`,
+        }`
       );
     }
     console.log("-----------------------\n");
