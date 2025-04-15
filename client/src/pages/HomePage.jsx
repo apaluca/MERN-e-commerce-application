@@ -1,22 +1,25 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import { useNavigate } from "react-router-dom";
+import ProductCarousel from "../components/ProductCarousel";
 
 const HomePage = () => {
-  const { API, addToCart, user } = useAppContext();
+  const { API, user } = useAppContext();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
-  const navigate = useNavigate();
+  const [carouselSettings, setCarouselSettings] = useState({
+    autoPlay: true,
+    interval: 5000,
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Fetch products for featured section
-        const response = await API.get("/products?limit=4&sort=newest");
+        // Fetch featured products for carousel
+        const response = await API.get("/products?featured=true&limit=5");
 
         // Check if the response has the expected structure
         if (response.data && response.data.products) {
@@ -24,15 +27,28 @@ const HomePage = () => {
         } else {
           // Fallback in case the API returns just an array of products
           setFeaturedProducts(
-            Array.isArray(response.data) ? response.data.slice(0, 4) : []
+            Array.isArray(response.data)
+              ? response.data.filter((p) => p.featured).slice(0, 5)
+              : []
           );
+        }
+
+        // Fetch carousel settings
+        try {
+          const settingsRes = await API.get("/settings/carousel");
+          if (settingsRes.data) {
+            setCarouselSettings(settingsRes.data);
+          }
+        } catch (settingsError) {
+          console.error("Error fetching carousel settings:", settingsError);
+          // Use default settings on error
         }
 
         // Fetch categories
         const categoryRes = await API.get("/products");
 
         if (categoryRes.data && categoryRes.data.products) {
-          // Extract unique categories from the products array in the new API response format
+          // Extract unique categories
           const uniqueCategories = [
             ...new Set(
               categoryRes.data.products.map((product) => product.category)
@@ -59,13 +75,6 @@ const HomePage = () => {
 
     fetchData();
   }, [API]);
-
-  const handleAddToCart = async (productId) => {
-    const result = await addToCart(productId, 1);
-    if (result.success) {
-      navigate("/cart");
-    }
-  };
 
   return (
     <div className="min-h-screen">
@@ -114,74 +123,22 @@ const HomePage = () => {
           </div>
         ) : featuredProducts.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">No products available.</p>
+            <p className="text-gray-500">No featured products available.</p>
             {user && user.role === "admin" && (
               <Link
-                to="/admin/products"
+                to="/admin/carousel"
                 className="text-blue-500 hover:underline mt-2 inline-block"
               >
-                Add some products
+                Configure featured products
               </Link>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((product) => (
-              <div
-                key={product._id}
-                className="bg-white rounded-lg shadow overflow-hidden"
-              >
-                <Link
-                  to={`/products/${product._id}`}
-                  className="block relative"
-                >
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  {product.images && product.images.length > 0 && (
-                    <span className="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-md">
-                      +{product.images.length} photos
-                    </span>
-                  )}
-                </Link>
-                <div className="p-4">
-                  <Link
-                    to={`/products/${product._id}`}
-                    className="hover:text-blue-500"
-                  >
-                    <h3 className="font-semibold text-lg mb-2 text-gray-800">
-                      {product.name}
-                    </h3>
-                  </Link>
-                  <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-                    {product.description}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-800 font-bold">
-                      ${product.price.toFixed(2)}
-                    </span>
-                    {user ? (
-                      <button
-                        onClick={() => handleAddToCart(product._id)}
-                        className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600 transition-colors"
-                      >
-                        Add to Cart
-                      </button>
-                    ) : (
-                      <Link
-                        to="/login"
-                        className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm hover:bg-blue-600 transition-colors"
-                      >
-                        Sign in to buy
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProductCarousel
+            products={featuredProducts}
+            autoPlay={carouselSettings.autoPlay}
+            interval={carouselSettings.interval}
+          />
         )}
 
         <div className="mt-8 text-center">

@@ -23,6 +23,7 @@ import AdminDashboardPage from "./pages/admin/DashboardPage";
 import AdminUsersPage from "./pages/admin/UsersPage";
 import AdminProductsPage from "./pages/admin/ProductsPage";
 import AdminOrdersPage from "./pages/admin/OrdersPage";
+import CarouselSettingsPage from "./pages/admin/CarouselSettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 // Layout components
@@ -150,6 +151,14 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminOrdersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/carousel"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <CarouselSettingsPage />
                     </ProtectedRoute>
                   }
                 />

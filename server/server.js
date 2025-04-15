@@ -25,6 +25,7 @@ const orderRoutes = require("./routes/orders");
 const adminRoutes = require("./routes/admin");
 const reviewRoutes = require("./routes/review");
 const paymentRoutes = require("./routes/payment");
+const settingsRoutes = require("./routes/settings");
 
 // API routes
 app.use("/auth", authRoutes);
@@ -34,6 +35,7 @@ app.use("/orders", orderRoutes);
 app.use("/admin", adminRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/payment", paymentRoutes);
+app.use("/settings", settingsRoutes);
 
 // MongoDB Connection
 mongoose

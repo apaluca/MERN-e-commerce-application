@@ -130,7 +130,7 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 5000 }) => {
     <div className="relative">
       {/* Main carousel container with touch events */}
       <div
-        className="relative w-full overflow-hidden rounded-xl shadow-xl bg-gradient-to-r from-blue-50 to-indigo-50"
+        className="relative w-full overflow-hidden rounded-xl shadow-xl bg-white"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onTouchStart={onTouchStart}
@@ -141,10 +141,6 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 5000 }) => {
         <div className="absolute top-2 left-2 right-2 z-30 bg-white/80 backdrop-blur-sm rounded-lg p-2 text-center text-xs text-gray-700 sm:hidden">
           Swipe to see more featured products
         </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-blue-500 opacity-10 rounded-full -translate-x-8 -translate-y-8"></div>
-        <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-indigo-500 opacity-10 rounded-full translate-x-10 translate-y-10"></div>
 
         {/* Carousel container - adjusted height for mobile */}
         <div className="relative h-[600px] sm:h-[500px] md:h-[450px] lg:h-[500px] overflow-hidden">
@@ -164,9 +160,9 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 5000 }) => {
                 {/* Product image section - entire area is now clickable */}
                 <Link
                   to={`/products/${product._id}`}
-                  className="w-full h-1/2 sm:w-1/2 sm:h-full relative overflow-hidden group"
+                  className="w-full h-1/2 sm:w-1/2 sm:h-full relative overflow-hidden group bg-gray-100"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 mix-blend-multiply z-10"></div>
+                  {/* Removed the color overlay that was affecting image colors */}
                   <img
                     src={product.imageUrl}
                     alt={product.name}
@@ -175,9 +171,8 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 5000 }) => {
                 </Link>
 
                 {/* Product info section */}
-                <div className="w-full h-1/2 sm:w-1/2 sm:h-full p-4 sm:p-8 flex flex-col justify-center bg-white/90 backdrop-blur-sm">
-                  {/* More discrete category tag */}
-                  <span className="text-xs text-gray-500 tracking-wide mb-2 sm:mb-3 uppercase">
+                <div className="w-full h-1/2 sm:w-1/2 sm:h-full p-4 sm:p-8 flex flex-col justify-center bg-white">
+                  <span className="uppercase tracking-wide text-sm text-indigo-500 font-semibold">
                     {product.category}
                   </span>
 

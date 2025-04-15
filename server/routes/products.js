@@ -15,6 +15,11 @@ router.get("/", async (req, res) => {
       filter.category = req.query.category;
     }
 
+    // Apply featured filter
+    if (req.query.featured === "true") {
+      filter.featured = true;
+    }
+
     // Apply search filter
     if (req.query.search) {
       filter.$or = [
