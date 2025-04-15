@@ -15,7 +15,7 @@ const ProfilePage = () => {
     confirmPassword: "",
   });
 
-  // Address form state (for future shipping address saving)
+  // Address form state
   const [addressData, setAddressData] = useState({
     street: "",
     city: "",
@@ -31,8 +31,28 @@ const ProfilePage = () => {
         username: user.username || "",
         email: user.email || "",
       });
+
+      // Fetch user's shipping address
+      fetchShippingAddress();
     }
   }, [user]);
+
+  const fetchShippingAddress = async () => {
+    try {
+      const response = await API.get("/auth/address");
+      if (response.data && response.data.shippingAddress) {
+        setAddressData({
+          street: response.data.shippingAddress.street || "",
+          city: response.data.shippingAddress.city || "",
+          postalCode: response.data.shippingAddress.postalCode || "",
+          country: response.data.shippingAddress.country || "",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      // Don't show error to the user for this initial fetch
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -111,6 +131,17 @@ const ProfilePage = () => {
 
     // Reset success message
     setSuccess("");
+
+    // Validate address fields
+    if (
+      !addressData.street.trim() ||
+      !addressData.city.trim() ||
+      !addressData.postalCode.trim() ||
+      !addressData.country.trim()
+    ) {
+      setError("Please fill in all address fields");
+      return;
+    }
 
     setLoading(true);
 

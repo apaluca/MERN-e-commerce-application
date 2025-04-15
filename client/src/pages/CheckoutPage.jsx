@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import CreditCardForm from "../components/CreditCardForm";
 
 const CheckoutPage = () => {
-  const { cart, createOrder, loading } = useAppContext();
+  const { cart, createOrder, loading, API } = useAppContext();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -19,6 +19,43 @@ const CheckoutPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentStep, setPaymentStep] = useState("shipping"); // shipping or payment
   const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(true);
+
+  // Fetch user's saved shipping address on component mount
+  useEffect(() => {
+    const fetchSavedAddress = async () => {
+      try {
+        setAddressLoading(true);
+        const response = await API.get("/auth/address");
+
+        if (response.data && response.data.shippingAddress) {
+          const address = response.data.shippingAddress;
+          // Only update form if there is actual data
+          if (
+            address.street ||
+            address.city ||
+            address.postalCode ||
+            address.country
+          ) {
+            setFormData((prevData) => ({
+              ...prevData,
+              street: address.street || "",
+              city: address.city || "",
+              postalCode: address.postalCode || "",
+              country: address.country || "",
+            }));
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching saved address:", error);
+        // Don't show error to user for this
+      } finally {
+        setAddressLoading(false);
+      }
+    };
+
+    fetchSavedAddress();
+  }, [API]);
 
   if (cart.items.length === 0) {
     return (
@@ -219,165 +256,171 @@ const CheckoutPage = () => {
                   Shipping Address
                 </h2>
 
-                <form onSubmit={handleShippingSubmit}>
-                  <div className="grid grid-cols-1 gap-y-4">
-                    <div>
-                      <label
-                        htmlFor="street"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Street Address
-                      </label>
-                      <input
-                        type="text"
-                        id="street"
-                        name="street"
-                        value={formData.street}
-                        onChange={handleChange}
-                        onBlur={() => handleBlur("street")}
-                        className={`mt-1 block w-full border ${errors.street ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                      />
-                      {errors.street && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {errors.street}
-                        </p>
-                      )}
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="city"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        id="city"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleChange}
-                        onBlur={() => handleBlur("city")}
-                        className={`mt-1 block w-full border ${errors.city ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
-                      />
-                      {errors.city && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {errors.city}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {addressLoading ? (
+                  <div className="py-4 text-center text-gray-500">
+                    Loading saved address...
+                  </div>
+                ) : (
+                  <form onSubmit={handleShippingSubmit}>
+                    <div className="grid grid-cols-1 gap-y-4">
                       <div>
                         <label
-                          htmlFor="postalCode"
+                          htmlFor="street"
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Postal Code
+                          Street Address
                         </label>
                         <input
                           type="text"
-                          id="postalCode"
-                          name="postalCode"
-                          value={formData.postalCode}
+                          id="street"
+                          name="street"
+                          value={formData.street}
                           onChange={handleChange}
-                          onBlur={() => handleBlur("postalCode")}
-                          className={`mt-1 block w-full border ${errors.postalCode ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                          onBlur={() => handleBlur("street")}
+                          className={`mt-1 block w-full border ${errors.street ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                         />
-                        {errors.postalCode && (
+                        {errors.street && (
                           <p className="mt-1 text-sm text-red-600">
-                            {errors.postalCode}
+                            {errors.street}
                           </p>
                         )}
                       </div>
 
                       <div>
                         <label
-                          htmlFor="country"
+                          htmlFor="city"
                           className="block text-sm font-medium text-gray-700"
                         >
-                          Country
+                          City
                         </label>
                         <input
                           type="text"
-                          id="country"
-                          name="country"
-                          value={formData.country}
+                          id="city"
+                          name="city"
+                          value={formData.city}
                           onChange={handleChange}
-                          onBlur={() => handleBlur("country")}
-                          className={`mt-1 block w-full border ${errors.country ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                          onBlur={() => handleBlur("city")}
+                          className={`mt-1 block w-full border ${errors.city ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
                         />
-                        {errors.country && (
+                        {errors.city && (
                           <p className="mt-1 text-sm text-red-600">
-                            {errors.country}
+                            {errors.city}
                           </p>
                         )}
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="mt-8">
-                    <h2 className="text-lg font-medium text-gray-900 mb-4">
-                      Payment Method
-                    </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label
+                            htmlFor="postalCode"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Postal Code
+                          </label>
+                          <input
+                            type="text"
+                            id="postalCode"
+                            name="postalCode"
+                            value={formData.postalCode}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur("postalCode")}
+                            className={`mt-1 block w-full border ${errors.postalCode ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                          />
+                          {errors.postalCode && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {errors.postalCode}
+                            </p>
+                          )}
+                        </div>
 
-                    <div className="space-y-4">
-                      <div className="flex items-center">
-                        <input
-                          id="credit_card"
-                          name="paymentMethod"
-                          type="radio"
-                          value="credit_card"
-                          checked={formData.paymentMethod === "credit_card"}
-                          onChange={handleChange}
-                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                        />
-                        <label
-                          htmlFor="credit_card"
-                          className="ml-3 block text-sm font-medium text-gray-700"
-                        >
-                          Credit Card (Stripe)
-                        </label>
+                        <div>
+                          <label
+                            htmlFor="country"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Country
+                          </label>
+                          <input
+                            type="text"
+                            id="country"
+                            name="country"
+                            value={formData.country}
+                            onChange={handleChange}
+                            onBlur={() => handleBlur("country")}
+                            className={`mt-1 block w-full border ${errors.country ? "border-red-500" : "border-gray-300"} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
+                          />
+                          {errors.country && (
+                            <p className="mt-1 text-sm text-red-600">
+                              {errors.country}
+                            </p>
+                          )}
+                        </div>
                       </div>
+                    </div>
 
-                      <div className="flex items-center">
-                        <input
-                          id="cash_on_delivery"
-                          name="paymentMethod"
-                          type="radio"
-                          value="cash_on_delivery"
-                          checked={
-                            formData.paymentMethod === "cash_on_delivery"
-                          }
-                          onChange={handleChange}
-                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
-                        />
-                        <label
-                          htmlFor="cash_on_delivery"
-                          className="ml-3 block text-sm font-medium text-gray-700"
-                        >
-                          Cash on Delivery
-                        </label>
+                    <div className="mt-8">
+                      <h2 className="text-lg font-medium text-gray-900 mb-4">
+                        Payment Method
+                      </h2>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center">
+                          <input
+                            id="credit_card"
+                            name="paymentMethod"
+                            type="radio"
+                            value="credit_card"
+                            checked={formData.paymentMethod === "credit_card"}
+                            onChange={handleChange}
+                            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          />
+                          <label
+                            htmlFor="credit_card"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
+                            Credit Card (Stripe)
+                          </label>
+                        </div>
+
+                        <div className="flex items-center">
+                          <input
+                            id="cash_on_delivery"
+                            name="paymentMethod"
+                            type="radio"
+                            value="cash_on_delivery"
+                            checked={
+                              formData.paymentMethod === "cash_on_delivery"
+                            }
+                            onChange={handleChange}
+                            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          />
+                          <label
+                            htmlFor="cash_on_delivery"
+                            className="ml-3 block text-sm font-medium text-gray-700"
+                          >
+                            Cash on Delivery
+                          </label>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-8 flex justify-between">
-                    <Link
-                      to="/cart"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Back to Cart
-                    </Link>
+                    <div className="mt-8 flex justify-between">
+                      <Link
+                        to="/cart"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 bg-white rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        Back to Cart
+                      </Link>
 
-                    <button
-                      type="submit"
-                      className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Continue to Payment
-                    </button>
-                  </div>
-                </form>
+                      <button
+                        type="submit"
+                        className="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Continue to Payment
+                      </button>
+                    </div>
+                  </form>
+                )}
               </>
             ) : (
               <>

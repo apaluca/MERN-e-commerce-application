@@ -207,10 +207,45 @@ router.put("/profile", auth, async (req, res) => {
 router.put("/address", auth, async (req, res) => {
   try {
     const { street, city, postalCode, country } = req.body;
+    
+    // Find the user
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    // Update shipping address
+    user.shippingAddress = {
+      street,
+      city,
+      postalCode,
+      country
+    };
+    
+    await user.save();
+    
+    res.json({ 
+      message: "Address updated successfully",
+      shippingAddress: user.shippingAddress 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-    // In a real app, we'd update or create an address record
-    // For now, we'll just return success
-    res.json({ message: "Address updated successfully" });
+// Get user's shipping address
+router.get("/address", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.json({ 
+      shippingAddress: user.shippingAddress || {} 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

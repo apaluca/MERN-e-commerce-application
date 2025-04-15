@@ -25,6 +25,12 @@ const users = [
     role: "user",
     active: true,
     createdAt: new Date(),
+    shippingAddress: {
+      street: "123 Main Street",
+      city: "Bucharest",
+      postalCode: "12345",
+      country: "Romania"
+    }
   },
 ];
 
