@@ -91,6 +91,7 @@ const Pagination = ({
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-center mt-8 bg-white p-4 rounded-lg shadow-sm">
+      {/* Items per page control - Always visible */}
       <div className="mb-4 sm:mb-0">
         <label htmlFor="itemsPerPage" className="text-sm text-gray-700 mr-2">
           Items per page:
@@ -108,81 +109,90 @@ const Pagination = ({
         </select>
       </div>
 
-      <div className="flex items-center">
-        <button
-          onClick={() => onPageChange(1)}
-          disabled={currentPage === 1}
-          className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          &laquo;
-        </button>
-
-        <button
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          &lsaquo;
-        </button>
-
-        {startPage > 1 && (
-          <>
+      {/* Pagination buttons - Only visible when multiple pages */}
+      {totalPages > 1 ? (
+        <>
+          <div className="flex items-center">
             <button
               onClick={() => onPageChange(1)}
-              className="px-3 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
+              disabled={currentPage === 1}
+              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              1
+              &laquo;
             </button>
-            {startPage > 2 && <span className="mx-1">...</span>}
-          </>
-        )}
 
-        {visiblePageNumbers.map((number) => (
-          <button
-            key={number}
-            onClick={() => onPageChange(number)}
-            className={`px-3 py-1 mx-1 border rounded text-sm ${
-              currentPage === number
-                ? "bg-blue-500 text-white border-blue-500"
-                : "border-gray-300 hover:bg-gray-100"
-            }`}
-          >
-            {number}
-          </button>
-        ))}
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &lsaquo;
+            </button>
 
-        {endPage < totalPages && (
-          <>
-            {endPage < totalPages - 1 && <span className="mx-1">...</span>}
+            {startPage > 1 && (
+              <>
+                <button
+                  onClick={() => onPageChange(1)}
+                  className="px-3 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
+                >
+                  1
+                </button>
+                {startPage > 2 && <span className="mx-1">...</span>}
+              </>
+            )}
+
+            {visiblePageNumbers.map((number) => (
+              <button
+                key={number}
+                onClick={() => onPageChange(number)}
+                className={`px-3 py-1 mx-1 border rounded text-sm ${
+                  currentPage === number
+                    ? "bg-blue-500 text-white border-blue-500"
+                    : "border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {number}
+              </button>
+            ))}
+
+            {endPage < totalPages && (
+              <>
+                {endPage < totalPages - 1 && <span className="mx-1">...</span>}
+                <button
+                  onClick={() => onPageChange(totalPages)}
+                  className="px-3 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
+                >
+                  {totalPages}
+                </button>
+              </>
+            )}
+
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              &rsaquo;
+            </button>
+
             <button
               onClick={() => onPageChange(totalPages)}
-              className="px-3 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
+              disabled={currentPage === totalPages}
+              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {totalPages}
+              &raquo;
             </button>
-          </>
-        )}
+          </div>
 
-        <button
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          &rsaquo;
-        </button>
-
-        <button
-          onClick={() => onPageChange(totalPages)}
-          disabled={currentPage === totalPages}
-          className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          &raquo;
-        </button>
-      </div>
-
-      <div className="hidden sm:block text-sm text-gray-500">
-        Page {currentPage} of {totalPages}
-      </div>
+          <div className="hidden sm:block text-sm text-gray-500">
+            Page {currentPage} of {totalPages}
+          </div>
+        </>
+      ) : (
+        <div className="hidden sm:block text-sm text-gray-500">
+          Showing all items
+        </div>
+      )}
     </div>
   );
 };
@@ -555,15 +565,13 @@ const ProductsPage = () => {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-                itemsPerPage={itemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-              />
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+            />
           </>
         )}
       </div>
