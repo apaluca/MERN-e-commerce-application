@@ -24,7 +24,7 @@ const HomePage = () => {
         } else {
           // Fallback in case the API returns just an array of products
           setFeaturedProducts(
-            Array.isArray(response.data) ? response.data.slice(0, 4) : [],
+            Array.isArray(response.data) ? response.data.slice(0, 4) : []
           );
         }
 
@@ -35,7 +35,7 @@ const HomePage = () => {
           // Extract unique categories from the products array in the new API response format
           const uniqueCategories = [
             ...new Set(
-              categoryRes.data.products.map((product) => product.category),
+              categoryRes.data.products.map((product) => product.category)
             ),
           ];
           setCategories(uniqueCategories);
@@ -72,16 +72,16 @@ const HomePage = () => {
       {/* Hero Section */}
       <div className="bg-blue-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="md:w-1/2">
+          <div className="flex flex-col items-center">
+            <div className="w-full text-center">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
                 Welcome to ReactRetail
               </h1>
-              <p className="text-lg md:text-xl mb-8">
+              <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
                 Your one-stop shop for all your shopping needs. Find the best
                 products at the best prices.
               </p>
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+              <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
                 <Link
                   to="/products"
                   className="bg-white text-blue-600 font-semibold px-6 py-3 rounded-md shadow hover:bg-gray-100 transition-colors text-center"
@@ -96,19 +96,6 @@ const HomePage = () => {
                     Sign Up
                   </Link>
                 )}
-              </div>
-            </div>
-            <div className="hidden md:block md:w-1/2 md:pl-10">
-              <div className="bg-white rounded-lg p-6 shadow-lg mt-8 md:mt-0">
-                <div className="text-gray-800 text-center">
-                  <h2 className="text-xl font-semibold mb-2">Special Offer</h2>
-                  <p className="text-gray-600 mb-4">
-                    Sign up today and get 10% off your first order!
-                  </p>
-                  <div className="text-3xl font-bold text-blue-600">
-                    10% OFF
-                  </div>
-                </div>
               </div>
             </div>
           </div>

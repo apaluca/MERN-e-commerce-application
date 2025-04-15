@@ -384,7 +384,7 @@ const ProfilePage = () => {
             Account Summary
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-gray-50 p-4 rounded-md text-center">
               <div className="text-gray-500 text-sm mb-1">Member Since</div>
               <div className="text-gray-800 font-medium">
@@ -402,15 +402,6 @@ const ProfilePage = () => {
               <div className="text-gray-500 text-sm mb-1">Account Type</div>
               <div className="text-gray-800 font-medium capitalize">
                 {user.role || "user"}
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-md text-center">
-              <div className="text-gray-500 text-sm mb-1">Account Status</div>
-              <div
-                className={`font-medium ${user.active === true ? "text-green-600" : "text-red-600"}`}
-              >
-                {user.active === true ? "Active" : "Inactive"}
               </div>
             </div>
           </div>
