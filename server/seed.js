@@ -1,365 +1,895 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAppContext } from "../context/AppContext";
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
 
-const ProductCarousel = ({ products, autoPlay = true, interval = 4000 }) => {
-  // Separate autoplay default from user preference
-  const [autoPlayEnabled, setAutoPlayEnabled] = useState(autoPlay);
-  const [isHovering, setIsHovering] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState(null);
-  const [touchEnd, setTouchEnd] = useState(null);
-  const { addToCart, user } = useAppContext();
-  const navigate = useNavigate();
-  const autoPlayTimerRef = useRef(null);
-  const minSwipeDistance = 50;
+// Import models
+const User = require("./models/User");
+const Product = require("./models/Product");
+const Order = require("./models/Order");
+const Cart = require("./models/Cart");
+const Settings = require("./models/Settings");
 
-  // Handle next slide - memoized with useCallback to avoid recreating on every render
-  const nextSlide = useCallback(() => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === products.length - 1 ? 0 : prevIndex + 1
-    );
-  }, [products.length]);
-
-  // Handle previous slide
-  const prevSlide = useCallback(() => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? products.length - 1 : prevIndex - 1
-    );
-  }, [products.length]);
-
-  // Go to a specific slide
-  const goToSlide = (index) => {
-    setCurrentIndex(index);
-  };
-
-  // Handle add to cart
-  const handleAddToCart = async (e, productId) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const result = await addToCart(productId, 1);
-    if (result.success) {
-      navigate("/cart");
+// Sample users data
+const users = [
+  {
+    username: "admin",
+    email: "admin@example.com",
+    password: "password123",
+    role: "admin",
+    active: true,
+    createdAt: new Date(),
+  },
+  {
+    username: "user",
+    email: "user@example.com",
+    password: "password123",
+    role: "user",
+    active: true,
+    createdAt: new Date(),
+    shippingAddress: {
+      street: "123 Main Street",
+      city: "Bucharest",
+      postalCode: "12345",
+      country: "Romania"
     }
-  };
+  },
+];
 
-  // Toggle autoplay on/off
-  const toggleAutoPlay = () => {
-    setAutoPlayEnabled((prev) => !prev);
-  };
+// Sample product categories
+const categories = [
+  "electronics",
+  "clothing",
+  "home",
+  "books",
+  "sports",
+  "beauty",
+  "toys",
+];
 
-  // Set up auto-play - only active when autoPlayEnabled is true AND not hovering
-  useEffect(() => {
-    // Only run the autoplay if:
-    // - There are multiple products
-    // - Autoplay is explicitly enabled by the user
-    // - Not currently being interacted with
-    const shouldAutoPlay =
-      products.length > 1 && autoPlayEnabled && !isHovering;
+// Sample product data with multiple images
+const products = [
+  // Electronics Category
+  {
+    name: "Smartphone X",
+    description:
+      "Latest smartphone with high-end features including 6.5-inch display, 128GB storage, and 48MP camera. Includes fast charging and water resistance.",
+    price: 899.99,
+    imageUrl: "https://dummyimage.com/400x300/000/fff&text=Smartphone+Front",
+    images: [
+      "https://dummyimage.com/400x300/000/fff&text=Smartphone+Back",
+      "https://dummyimage.com/400x300/000/fff&text=Smartphone+Side",
+      "https://dummyimage.com/400x300/000/fff&text=Smartphone+Camera",
+      "https://dummyimage.com/400x300/000/fff&text=Smartphone+UI",
+    ],
+    category: "electronics",
+    stock: 25,
+    featured: true,
+  },
+  {
+    name: "Laptop Pro",
+    description:
+      "Powerful laptop with 16GB RAM, 512GB SSD, and dedicated graphics card perfect for professionals and gamers alike.",
+    price: 1299.99,
+    imageUrl: "https://dummyimage.com/400x300/222/fff&text=Laptop+Front",
+    images: [
+      "https://dummyimage.com/400x300/222/fff&text=Laptop+Open",
+      "https://dummyimage.com/400x300/222/fff&text=Laptop+Side",
+      "https://dummyimage.com/400x300/222/fff&text=Laptop+Ports",
+    ],
+    category: "electronics",
+    stock: 15,
+    featured: true,
+  },
+  {
+    name: "Wireless Headphones",
+    description:
+      "Noise-cancelling wireless headphones with 30-hour battery life and premium sound quality. Perfect for commuting or working from home.",
+    price: 249.99,
+    imageUrl: "https://dummyimage.com/400x300/333/fff&text=Headphones+Front",
+    images: [
+      "https://dummyimage.com/400x300/333/fff&text=Headphones+Side",
+      "https://dummyimage.com/400x300/333/fff&text=Headphones+Case",
+      "https://dummyimage.com/400x300/333/fff&text=Headphones+Controls",
+      "https://dummyimage.com/400x300/333/fff&text=Headphones+Charging",
+    ],
+    category: "electronics",
+    stock: 40,
+    featured: true,
+  },
+  {
+    name: "4K Smart TV",
+    description:
+      "55-inch 4K Ultra HD Smart TV with HDR support and built-in streaming apps. Perfect for movie nights and gaming.",
+    price: 649.99,
+    imageUrl: "https://dummyimage.com/400x300/444/fff&text=TV+Front",
+    images: [
+      "https://dummyimage.com/400x300/444/fff&text=TV+Side",
+      "https://dummyimage.com/400x300/444/fff&text=TV+Ports",
+      "https://dummyimage.com/400x300/444/fff&text=TV+Remote",
+    ],
+    category: "electronics",
+    stock: 18,
+    featured: true,
+  },
+  {
+    name: "Wireless Earbuds",
+    description:
+      "True wireless earbuds with active noise cancellation and up to 8 hours of battery life per charge. Water and sweat resistant.",
+    price: 129.99,
+    imageUrl: "https://dummyimage.com/400x300/555/fff&text=Earbuds+Case",
+    images: [
+      "https://dummyimage.com/400x300/555/fff&text=Earbuds+Open",
+      "https://dummyimage.com/400x300/555/fff&text=Earbuds+Fit",
+      "https://dummyimage.com/400x300/555/fff&text=Earbuds+Charging",
+    ],
+    category: "electronics",
+    stock: 35,
+    featured: true,
+  },
 
-    if (shouldAutoPlay) {
-      autoPlayTimerRef.current = setInterval(() => {
-        nextSlide();
-      }, interval);
-    } else {
-      // Clean up any existing interval
-      if (autoPlayTimerRef.current) {
-        clearInterval(autoPlayTimerRef.current);
-        autoPlayTimerRef.current = null;
-      }
-    }
+  // Clothing Category
+  {
+    name: "Men's Cotton T-Shirt",
+    description:
+      "Comfortable 100% cotton t-shirt available in multiple colors and sizes. Classic fit with reinforced stitching for durability.",
+    price: 19.99,
+    imageUrl: "https://dummyimage.com/400x300/666/fff&text=T-Shirt+Front",
+    images: [
+      "https://dummyimage.com/400x300/666/fff&text=T-Shirt+Back",
+      "https://dummyimage.com/400x300/666/fff&text=T-Shirt+Blue",
+      "https://dummyimage.com/400x300/666/fff&text=T-Shirt+Black",
+    ],
+    category: "clothing",
+    stock: 100,
+  },
+  {
+    name: "Women's Jeans",
+    description:
+      "Classic fit women's denim jeans with stretch material for extra comfort. Available in various washes and sizes.",
+    price: 49.99,
+    imageUrl: "https://dummyimage.com/400x300/777/fff&text=Jeans+Front",
+    images: [
+      "https://dummyimage.com/400x300/777/fff&text=Jeans+Back",
+      "https://dummyimage.com/400x300/777/fff&text=Jeans+Detail",
+      "https://dummyimage.com/400x300/777/fff&text=Jeans+Folded",
+    ],
+    category: "clothing",
+    stock: 75,
+  },
+  {
+    name: "Running Shoes",
+    description:
+      "Lightweight running shoes with responsive cushioning and breathable mesh upper. Designed for optimal performance and comfort.",
+    price: 89.99,
+    imageUrl: "https://dummyimage.com/400x300/888/fff&text=Shoes+Side",
+    images: [
+      "https://dummyimage.com/400x300/888/fff&text=Shoes+Top",
+      "https://dummyimage.com/400x300/888/fff&text=Shoes+Bottom",
+      "https://dummyimage.com/400x300/888/fff&text=Shoes+Back",
+      "https://dummyimage.com/400x300/888/fff&text=Shoes+Insole",
+    ],
+    category: "clothing",
+    stock: 50,
+  },
+  {
+    name: "Winter Jacket",
+    description:
+      "Warm and waterproof winter jacket with thermal insulation and adjustable hood. Perfect for cold weather activities.",
+    price: 129.99,
+    imageUrl: "https://dummyimage.com/400x300/999/fff&text=Jacket+Front",
+    images: [
+      "https://dummyimage.com/400x300/999/fff&text=Jacket+Back",
+      "https://dummyimage.com/400x300/999/fff&text=Jacket+Hood",
+      "https://dummyimage.com/400x300/999/fff&text=Jacket+Pockets",
+    ],
+    category: "clothing",
+    stock: 30,
+  },
+  {
+    name: "Casual Dress",
+    description:
+      "Elegant casual dress made from soft fabric with a flattering cut. Suitable for both office and evening occasions.",
+    price: 59.99,
+    imageUrl: "https://dummyimage.com/400x300/aaa/fff&text=Dress+Front",
+    images: [
+      "https://dummyimage.com/400x300/aaa/fff&text=Dress+Back",
+      "https://dummyimage.com/400x300/aaa/fff&text=Dress+Side",
+      "https://dummyimage.com/400x300/aaa/fff&text=Dress+Detail",
+    ],
+    category: "clothing",
+    stock: 45,
+  },
 
-    return () => {
-      if (autoPlayTimerRef.current) {
-        clearInterval(autoPlayTimerRef.current);
-      }
-    };
-  }, [autoPlayEnabled, isHovering, interval, products.length, nextSlide]);
+  // Home Category
+  {
+    name: "Coffee Table",
+    description:
+      "Modern coffee table with tempered glass top and sturdy wooden legs. Adds elegance and functionality to any living room.",
+    price: 199.99,
+    imageUrl: "https://dummyimage.com/400x300/bbb/fff&text=Table+Top",
+    images: [
+      "https://dummyimage.com/400x300/bbb/fff&text=Table+Side",
+      "https://dummyimage.com/400x300/bbb/fff&text=Table+Legs",
+      "https://dummyimage.com/400x300/bbb/fff&text=Table+Detail",
+    ],
+    category: "home",
+    stock: 10,
+  },
+  {
+    name: "Bedding Set",
+    description:
+      "Luxury bedding set including duvet cover, sheet, and pillow cases. Made from 100% cotton with a high thread count.",
+    price: 79.99,
+    imageUrl: "https://dummyimage.com/400x300/ccc/333&text=Bedding+Full",
+    images: [
+      "https://dummyimage.com/400x300/ccc/333&text=Bedding+Pillows",
+      "https://dummyimage.com/400x300/ccc/333&text=Bedding+Detail",
+      "https://dummyimage.com/400x300/ccc/333&text=Bedding+Folded",
+    ],
+    category: "home",
+    stock: 30,
+  },
+  {
+    name: "Kitchen Blender",
+    description:
+      "High-powered blender for smoothies, soups, and more with multiple speed settings and durable stainless steel blades.",
+    price: 69.99,
+    imageUrl: "https://dummyimage.com/400x300/ddd/333&text=Blender+Full",
+    images: [
+      "https://dummyimage.com/400x300/ddd/333&text=Blender+Top",
+      "https://dummyimage.com/400x300/ddd/333&text=Blender+Controls",
+      "https://dummyimage.com/400x300/ddd/333&text=Blender+Blades",
+    ],
+    category: "home",
+    stock: 20,
+  },
+  {
+    name: "Floor Lamp",
+    description:
+      "Modern floor lamp with adjustable head and dimming function. Provides warm lighting for reading and ambiance.",
+    price: 89.99,
+    imageUrl: "https://dummyimage.com/400x300/eee/333&text=Lamp+Full",
+    images: [
+      "https://dummyimage.com/400x300/eee/333&text=Lamp+Head",
+      "https://dummyimage.com/400x300/eee/333&text=Lamp+Switch",
+      "https://dummyimage.com/400x300/eee/333&text=Lamp+Base",
+    ],
+    category: "home",
+    stock: 15,
+  },
+  {
+    name: "Cookware Set",
+    description:
+      "12-piece non-stick cookware set including pots, pans, and utensils. Dishwasher safe and suitable for all stovetops.",
+    price: 149.99,
+    imageUrl: "https://dummyimage.com/400x300/fff/333&text=Cookware+Set",
+    images: [
+      "https://dummyimage.com/400x300/fff/333&text=Cookware+Pots",
+      "https://dummyimage.com/400x300/fff/333&text=Cookware+Pans",
+      "https://dummyimage.com/400x300/fff/333&text=Cookware+Utensils",
+    ],
+    category: "home",
+    stock: 12,
+  },
 
-  // Pause on hover - but this doesn't change the autoPlayEnabled state
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-  };
+  // Books Category
+  {
+    name: "Bestselling Novel",
+    description:
+      "The latest bestselling fiction novel that's taking the world by storm. A thrilling page-turner you won't be able to put down.",
+    price: 15.99,
+    imageUrl: "https://dummyimage.com/400x300/000/fff&text=Novel+Cover",
+    images: [
+      "https://dummyimage.com/400x300/000/fff&text=Novel+Back",
+      "https://dummyimage.com/400x300/000/fff&text=Novel+Pages",
+      "https://dummyimage.com/400x300/000/fff&text=Novel+Inside",
+    ],
+    category: "books",
+    stock: 60,
+  },
+  {
+    name: "Cookbook",
+    description:
+      "Collection of 100 easy recipes for beginners and experienced cooks alike. Includes vegetarian, meat, and dessert options.",
+    price: 24.99,
+    imageUrl: "https://dummyimage.com/400x300/222/fff&text=Cookbook+Cover",
+    images: [
+      "https://dummyimage.com/400x300/222/fff&text=Cookbook+Back",
+      "https://dummyimage.com/400x300/222/fff&text=Cookbook+Recipe",
+      "https://dummyimage.com/400x300/222/fff&text=Cookbook+Contents",
+    ],
+    category: "books",
+    stock: 35,
+  },
+  {
+    name: "Self-Help Book",
+    description:
+      "Guide to personal development and achieving your goals with practical exercises and proven techniques.",
+    price: 18.99,
+    imageUrl: "https://dummyimage.com/400x300/333/fff&text=Self-Help+Cover",
+    images: [
+      "https://dummyimage.com/400x300/333/fff&text=Self-Help+Back",
+      "https://dummyimage.com/400x300/333/fff&text=Self-Help+Chapter",
+      "https://dummyimage.com/400x300/333/fff&text=Self-Help+Exercise",
+    ],
+    category: "books",
+    stock: 45,
+  },
+  {
+    name: "History Book",
+    description:
+      "Comprehensive history of the modern world with detailed accounts of major events and their impact on society.",
+    price: 29.99,
+    imageUrl: "https://dummyimage.com/400x300/444/fff&text=History+Cover",
+    images: [
+      "https://dummyimage.com/400x300/444/fff&text=History+Back",
+      "https://dummyimage.com/400x300/444/fff&text=History+Photos",
+      "https://dummyimage.com/400x300/444/fff&text=History+Timeline",
+    ],
+    category: "books",
+    stock: 22,
+  },
+  {
+    name: "Science Book",
+    description:
+      "Exploration of modern scientific discoveries and theories, written for the general reader with beautiful illustrations.",
+    price: 27.99,
+    imageUrl: "https://dummyimage.com/400x300/555/fff&text=Science+Cover",
+    images: [
+      "https://dummyimage.com/400x300/555/fff&text=Science+Back",
+      "https://dummyimage.com/400x300/555/fff&text=Science+Diagram",
+      "https://dummyimage.com/400x300/555/fff&text=Science+Chapter",
+    ],
+    category: "books",
+    stock: 18,
+  },
 
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-  };
+  // Sports Category
+  {
+    name: "Yoga Mat",
+    description:
+      "Non-slip yoga mat made from eco-friendly materials. Perfect thickness for joint protection and stability during practice.",
+    price: 29.99,
+    imageUrl: "https://dummyimage.com/400x300/666/fff&text=Yoga+Mat+Rolled",
+    images: [
+      "https://dummyimage.com/400x300/666/fff&text=Yoga+Mat+Open",
+      "https://dummyimage.com/400x300/666/fff&text=Yoga+Mat+Texture",
+      "https://dummyimage.com/400x300/666/fff&text=Yoga+Mat+Colors",
+    ],
+    category: "sports",
+    stock: 40,
+  },
+  {
+    name: "Dumbbells Set",
+    description:
+      "Set of adjustable dumbbells ranging from 5 to 25 lbs. Compact design perfect for home workouts and strength training.",
+    price: 149.99,
+    imageUrl: "https://dummyimage.com/400x300/777/fff&text=Dumbbells+Set",
+    images: [
+      "https://dummyimage.com/400x300/777/fff&text=Dumbbells+Single",
+      "https://dummyimage.com/400x300/777/fff&text=Dumbbells+Weights",
+      "https://dummyimage.com/400x300/777/fff&text=Dumbbells+Adjustment",
+    ],
+    category: "sports",
+    stock: 15,
+  },
+  {
+    name: "Basketball",
+    description:
+      "Official size and weight basketball with superior grip and durability. Suitable for indoor and outdoor play.",
+    price: 24.99,
+    imageUrl: "https://dummyimage.com/400x300/888/fff&text=Basketball+Front",
+    images: [
+      "https://dummyimage.com/400x300/888/fff&text=Basketball+Grip",
+      "https://dummyimage.com/400x300/888/fff&text=Basketball+Valve",
+      "https://dummyimage.com/400x300/888/fff&text=Basketball+Logo",
+    ],
+    category: "sports",
+    stock: 30,
+  },
+  {
+    name: "Tennis Racket",
+    description:
+      "Professional tennis racket with balanced weight distribution and optimal string tension for powerful shots.",
+    price: 89.99,
+    imageUrl: "https://dummyimage.com/400x300/999/fff&text=Racket+Front",
+    images: [
+      "https://dummyimage.com/400x300/999/fff&text=Racket+Back",
+      "https://dummyimage.com/400x300/999/fff&text=Racket+Grip",
+      "https://dummyimage.com/400x300/999/fff&text=Racket+Strings",
+    ],
+    category: "sports",
+    stock: 20,
+  },
+  {
+    name: "Fitness Tracker",
+    description:
+      "Advanced fitness tracker with heart rate monitor, GPS, and sleep tracking. Waterproof and with long battery life.",
+    price: 79.99,
+    imageUrl: "https://dummyimage.com/400x300/aaa/fff&text=Tracker+Front",
+    images: [
+      "https://dummyimage.com/400x300/aaa/fff&text=Tracker+Side",
+      "https://dummyimage.com/400x300/aaa/fff&text=Tracker+Back",
+      "https://dummyimage.com/400x300/aaa/fff&text=Tracker+Screen",
+      "https://dummyimage.com/400x300/aaa/fff&text=Tracker+Charger",
+    ],
+    category: "sports",
+    stock: 25,
+  },
 
-  // Touch event handlers for mobile swipe
-  const onTouchStart = (e) => {
-    setTouchEnd(null); // Reset touchEnd
-    setTouchStart(e.targetTouches[0].clientX);
-    setIsHovering(true); // Consider touch interaction as hovering
-  };
+  // Beauty Category
+  {
+    name: "Skincare Set",
+    description:
+      "Complete skincare regimen including cleanser, toner, serum, and moisturizer. Made with natural ingredients for all skin types.",
+    price: 59.99,
+    imageUrl: "https://dummyimage.com/400x300/bbb/fff&text=Skincare+Set",
+    images: [
+      "https://dummyimage.com/400x300/bbb/fff&text=Skincare+Cleanser",
+      "https://dummyimage.com/400x300/bbb/fff&text=Skincare+Toner",
+      "https://dummyimage.com/400x300/bbb/fff&text=Skincare+Serum",
+      "https://dummyimage.com/400x300/bbb/fff&text=Skincare+Moisturizer",
+    ],
+    category: "beauty",
+    stock: 20,
+  },
+  {
+    name: "Hair Dryer",
+    description:
+      "Professional hair dryer with multiple heat and speed settings. Includes diffuser and concentrator attachments.",
+    price: 49.99,
+    imageUrl: "https://dummyimage.com/400x300/ccc/333&text=Hairdryer+Side",
+    images: [
+      "https://dummyimage.com/400x300/ccc/333&text=Hairdryer+Front",
+      "https://dummyimage.com/400x300/ccc/333&text=Hairdryer+Back",
+      "https://dummyimage.com/400x300/ccc/333&text=Hairdryer+Attachments",
+    ],
+    category: "beauty",
+    stock: 15,
+  },
+  {
+    name: "Makeup Palette",
+    description:
+      "Versatile eyeshadow palette with 24 highly pigmented colors. Mix of matte and shimmer finishes for endless looks.",
+    price: 34.99,
+    imageUrl: "https://dummyimage.com/400x300/ddd/333&text=Palette+Closed",
+    images: [
+      "https://dummyimage.com/400x300/ddd/333&text=Palette+Open",
+      "https://dummyimage.com/400x300/ddd/333&text=Palette+Swatches",
+      "https://dummyimage.com/400x300/ddd/333&text=Palette+Mirror",
+    ],
+    category: "beauty",
+    stock: 30,
+  },
+  {
+    name: "Electric Shaver",
+    description:
+      "Precision electric shaver with multiple cutting elements. Suitable for wet and dry use with up to 60 minutes of cordless operation.",
+    price: 89.99,
+    imageUrl: "https://dummyimage.com/400x300/eee/333&text=Shaver+Front",
+    images: [
+      "https://dummyimage.com/400x300/eee/333&text=Shaver+Head",
+      "https://dummyimage.com/400x300/eee/333&text=Shaver+Charger",
+      "https://dummyimage.com/400x300/eee/333&text=Shaver+Case",
+    ],
+    category: "beauty",
+    stock: 22,
+  },
+  {
+    name: "Perfume",
+    description:
+      "Elegant perfume with notes of jasmine, vanilla, and sandalwood. Long-lasting fragrance in a beautiful glass bottle.",
+    price: 69.99,
+    imageUrl: "https://dummyimage.com/400x300/fff/333&text=Perfume+Bottle",
+    images: [
+      "https://dummyimage.com/400x300/fff/333&text=Perfume+Box",
+      "https://dummyimage.com/400x300/fff/333&text=Perfume+Spray",
+      "https://dummyimage.com/400x300/fff/333&text=Perfume+Set",
+    ],
+    category: "beauty",
+    stock: 18,
+  },
 
-  const onTouchMove = (e) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
+  // Toys Category
+  {
+    name: "Building Blocks Set",
+    description:
+      "Creative building blocks set with 500+ pieces in various colors and shapes. Compatible with all major building block brands.",
+    price: 29.99,
+    imageUrl: "https://dummyimage.com/400x300/000/fff&text=Blocks+Set",
+    images: [
+      "https://dummyimage.com/400x300/000/fff&text=Blocks+Built",
+      "https://dummyimage.com/400x300/000/fff&text=Blocks+Colors",
+      "https://dummyimage.com/400x300/000/fff&text=Blocks+Storage",
+    ],
+    category: "toys",
+    stock: 25,
+  },
+  {
+    name: "Remote Control Car",
+    description:
+      "High-speed remote control car with durable construction and responsive controls. Battery provides up to 30 minutes of play time.",
+    price: 39.99,
+    imageUrl: "https://dummyimage.com/400x300/222/fff&text=RC+Car+Side",
+    images: [
+      "https://dummyimage.com/400x300/222/fff&text=RC+Car+Front",
+      "https://dummyimage.com/400x300/222/fff&text=RC+Car+Controller",
+      "https://dummyimage.com/400x300/222/fff&text=RC+Car+Battery",
+    ],
+    category: "toys",
+    stock: 20,
+  },
+  {
+    name: "Stuffed Animal",
+    description:
+      "Soft and cuddly stuffed animal made with high-quality plush material. Safe for all ages and machine washable.",
+    price: 19.99,
+    imageUrl:
+      "https://dummyimage.com/400x300/333/fff&text=Stuffed+Animal+Front",
+    images: [
+      "https://dummyimage.com/400x300/333/fff&text=Stuffed+Animal+Side",
+      "https://dummyimage.com/400x300/333/fff&text=Stuffed+Animal+Back",
+      "https://dummyimage.com/400x300/333/fff&text=Stuffed+Animal+Face",
+    ],
+    category: "toys",
+    stock: 35,
+  },
+  {
+    name: "Board Game",
+    description:
+      "Family board game suitable for 2-6 players. Combines strategy and luck for hours of entertainment. Ages 8 and up.",
+    price: 24.99,
+    imageUrl: "https://dummyimage.com/400x300/444/fff&text=Board+Game+Box",
+    images: [
+      "https://dummyimage.com/400x300/444/fff&text=Board+Game+Board",
+      "https://dummyimage.com/400x300/444/fff&text=Board+Game+Pieces",
+      "https://dummyimage.com/400x300/444/fff&text=Board+Game+Cards",
+    ],
+    category: "toys",
+    stock: 15,
+  },
+  {
+    name: "Art Set",
+    description:
+      "Complete art set with colored pencils, markers, paints, and drawing paper. Perfect for young artists and creative activities.",
+    price: 22.99,
+    imageUrl: "https://dummyimage.com/400x300/555/fff&text=Art+Set+Box",
+    images: [
+      "https://dummyimage.com/400x300/555/fff&text=Art+Set+Open",
+      "https://dummyimage.com/400x300/555/fff&text=Art+Set+Pencils",
+      "https://dummyimage.com/400x300/555/fff&text=Art+Set+Paints",
+    ],
+    category: "toys",
+    stock: 28,
+  },
+];
 
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-
-    if (isLeftSwipe) {
-      nextSlide();
-    } else if (isRightSwipe) {
-      prevSlide();
-    }
-
-    // Reset values
-    setTouchStart(null);
-    setTouchEnd(null);
-
-    // End touch interaction after a short delay
-    setTimeout(() => setIsHovering(false), 1000);
-  };
-
-  if (!products || products.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">No featured products available.</p>
-      </div>
-    );
+// Connect to MongoDB
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB connected");
+    return true;
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
+    process.exit(1);
   }
+};
 
-  return (
-    <div className="relative">
-      {/* Main carousel container with touch events */}
-      <div
-        className="relative w-full overflow-hidden rounded-xl shadow-xl bg-gradient-to-r from-blue-50 to-indigo-50"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        {/* Mobile swipe hint - only shown on mobile */}
-        <div className="absolute top-2 left-2 right-2 z-30 bg-white/80 backdrop-blur-sm rounded-lg p-2 text-center text-xs text-gray-700 sm:hidden">
-          Swipe to see more featured products
-        </div>
-
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-16 sm:w-24 h-16 sm:h-24 bg-blue-500 opacity-10 rounded-full -translate-x-8 -translate-y-8"></div>
-        <div className="absolute bottom-0 right-0 w-20 sm:w-32 h-20 sm:h-32 bg-indigo-500 opacity-10 rounded-full translate-x-10 translate-y-10"></div>
-
-        {/* Carousel container - adjusted height for mobile */}
-        <div className="relative h-[600px] sm:h-[500px] md:h-[450px] lg:h-[500px] overflow-hidden">
-          {products.map((product, index) => (
-            <div
-              key={product._id}
-              className={`absolute top-0 left-0 w-full h-full transition-all duration-700 ease-in-out ${
-                index === currentIndex
-                  ? "opacity-100 z-10 translate-x-0"
-                  : index < currentIndex
-                    ? "opacity-0 -translate-x-full z-0"
-                    : "opacity-0 translate-x-full z-0"
-              }`}
-            >
-              {/* Stacked layout on mobile, side by side on desktop */}
-              <div className="flex flex-col h-full sm:flex-row">
-                {/* Product image section - entire area is now clickable */}
-                <Link
-                  to={`/products/${product._id}`}
-                  className="w-full h-1/2 sm:w-1/2 sm:h-full relative overflow-hidden group"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 mix-blend-multiply z-10"></div>
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="object-cover w-full h-full transition-transform duration-10000 group-hover:scale-110"
-                  />
-                </Link>
-
-                {/* Product info section */}
-                <div className="w-full h-1/2 sm:w-1/2 sm:h-full p-4 sm:p-8 flex flex-col justify-center bg-white/90 backdrop-blur-sm">
-                  {/* More discrete category tag */}
-                  <span className="text-xs text-gray-500 tracking-wide mb-2 sm:mb-3 uppercase">
-                    {product.category}
-                  </span>
-
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-2 sm:mb-3 leading-tight">
-                    {product.name}
-                  </h3>
-
-                  <div className="h-0.5 w-12 sm:w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mb-2 sm:mb-4"></div>
-
-                  <p className="text-sm sm:text-base text-gray-600 mb-3 sm:mb-6 line-clamp-2 sm:line-clamp-3">
-                    {product.description}
-                  </p>
-
-                  <div className="mb-3 sm:mb-6">
-                    <span className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600">
-                      ${product.price.toFixed(2)}
-                    </span>
-                    {product.stock <= 5 && product.stock > 0 && (
-                      <span className="ml-2 sm:ml-3 text-xs sm:text-sm bg-red-100 text-red-700 px-2 py-1 rounded-full">
-                        Only {product.stock} left!
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Action buttons - only show Add to Cart/Sign in */}
-                  <div className="hidden sm:flex">
-                    {user && product.stock > 0 ? (
-                      <button
-                        onClick={(e) => handleAddToCart(e, product._id)}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full text-sm sm:text-base font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 hover:shadow-lg"
-                      >
-                        Add to Cart
-                      </button>
-                    ) : (
-                      !user && (
-                        <Link
-                          to="/login"
-                          className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full text-sm sm:text-base font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 hover:shadow-lg"
-                        >
-                          Sign in to Buy
-                        </Link>
-                      )
-                    )}
-                  </div>
-
-                  {/* Mobile action button - only visible on mobile, full width */}
-                  <div className="flex sm:hidden w-full mt-1">
-                    {user && product.stock > 0 ? (
-                      <button
-                        onClick={(e) => handleAddToCart(e, product._id)}
-                        className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-medium"
-                      >
-                        Add to Cart
-                      </button>
-                    ) : (
-                      !user && (
-                        <Link
-                          to="/login"
-                          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-medium text-center"
-                        >
-                          Sign in to Buy
-                        </Link>
-                      )
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Auto-play toggle - positioned in corner */}
-        {products.length > 1 && (
-          <button
-            className="absolute top-10 sm:top-4 right-4 bg-white/80 hover:bg-white rounded-full w-12 h-12 sm:w-10 sm:h-10 flex items-center justify-center z-20 shadow-md hover:shadow-lg transition-all focus:outline-none"
-            onClick={toggleAutoPlay}
-            aria-label={autoPlayEnabled ? "Pause autoplay" : "Start autoplay"}
-          >
-            {autoPlayEnabled ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 sm:h-5 sm:w-5 text-blue-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            )}
-          </button>
-        )}
-      </div>
-
-      {/* Navigation with indicators and arrows positioned below content */}
-      {products.length > 1 && (
-        <div className="mt-2 sm:mt-4 flex items-center justify-center">
-          <button
-            onClick={prevSlide}
-            className="p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors"
-            aria-label="Previous slide"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-
-          <div className="flex items-center mx-4">
-            {products.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`mx-1 transition-all focus:outline-none ${
-                  index === currentIndex
-                    ? "w-8 h-2 bg-blue-600 rounded-full"
-                    : "w-2 h-2 bg-gray-300 rounded-full hover:bg-blue-300"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-
-          <button
-            onClick={nextSlide}
-            className="p-2 text-gray-600 hover:text-blue-600 focus:outline-none transition-colors"
-            aria-label="Next slide"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        </div>
-      )}
-    </div>
+// Generate a random date within the last 30 days
+const getRandomDate = () => {
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  return new Date(
+    thirtyDaysAgo.getTime() +
+      Math.random() * (now.getTime() - thirtyDaysAgo.getTime())
   );
 };
 
-export default ProductCarousel;
+// Generate a mock Stripe payment intent ID
+const generateMockPaymentIntentId = () => {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "pi_";
+  for (let i = 0; i < 24; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+};
+
+// Seed database function
+const seedDatabase = async (clearDB = false) => {
+  try {
+    // Connect to the database
+    await connectDB();
+
+    if (clearDB) {
+      // Clear existing data
+      console.log("Clearing existing data...");
+      await User.deleteMany({});
+      await Product.deleteMany({});
+      await Order.deleteMany({});
+      await Cart.deleteMany({});
+      console.log("Database cleared.");
+    }
+
+    console.log("Starting database seeding...");
+
+    // Seed users - IMPORTANT: Manually hash passwords instead of relying on pre-save hook
+    console.log("Seeding users...");
+    const createdUsers = [];
+    for (const userData of users) {
+      const existingUser = await User.findOne({ email: userData.email });
+
+      if (!existingUser) {
+        // Manually hash the password with 10 salt rounds
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+        // Create user with pre-hashed password and explicitly set fields
+        const user = await User.create({
+          ...userData,
+          password: hashedPassword,
+          active: true, // Explicitly set active status
+          createdAt: new Date(), // Explicitly set creation date
+        });
+
+        createdUsers.push(user);
+        console.log(`User created: ${user.username} (${user.role})`);
+        console.log(`  - Active: ${user.active}`);
+        console.log(`  - Created At: ${user.createdAt}`);
+      } else {
+        // For existing users, ensure password is correctly hashed and update fields
+        let needsUpdate = false;
+
+        // Test if the password is already hashed by attempting to compare
+        try {
+          const isMatch = await bcrypt.compare(
+            userData.password,
+            existingUser.password
+          );
+          if (!isMatch) {
+            needsUpdate = true;
+          }
+        } catch (error) {
+          // If error during comparison, the password is likely not properly hashed
+          needsUpdate = true;
+        }
+
+        // Check if active status and createdAt needs update
+        if (existingUser.active !== true || !existingUser.createdAt) {
+          needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+          // Update with properly hashed password and other fields
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash(userData.password, salt);
+
+          existingUser.password = hashedPassword;
+          existingUser.active = true; // Ensure active is true
+
+          // Set createdAt if it doesn't exist
+          if (!existingUser.createdAt) {
+            existingUser.createdAt = new Date();
+          }
+
+          await existingUser.save();
+          console.log(`User updated: ${existingUser.username}`);
+          console.log(`  - Active: ${existingUser.active}`);
+          console.log(`  - Created At: ${existingUser.createdAt}`);
+        } else {
+          console.log(
+            `User already exists with correct settings: ${existingUser.username} (${existingUser.role})`
+          );
+          console.log(`  - Active: ${existingUser.active}`);
+          console.log(`  - Created At: ${existingUser.createdAt}`);
+        }
+
+        createdUsers.push(existingUser);
+      }
+
+      // Verify the password hash works
+      const user = await User.findOne({ email: userData.email });
+      const passwordValid = await bcrypt.compare(
+        userData.password,
+        user.password
+      );
+      if (passwordValid) {
+        console.log(`✓ Password verification successful for ${user.username}`);
+      } else {
+        console.error(`✗ Password verification FAILED for ${user.username}`);
+      }
+    }
+
+    // Seed products
+    console.log("Seeding products...");
+    const createdProducts = [];
+
+    for (const productData of products) {
+      try {
+        const existingProduct = await Product.findOne({
+          name: productData.name,
+        });
+
+        if (!existingProduct) {
+          const product = await Product.create(productData);
+          createdProducts.push(product);
+          console.log(`Product created: ${product.name} (${product.category})`);
+        } else {
+          // Update existing product with new data (especially images)
+          existingProduct.description = productData.description;
+          existingProduct.price = productData.price;
+          existingProduct.imageUrl = productData.imageUrl;
+          existingProduct.images = productData.images || [];
+          existingProduct.category = productData.category;
+          existingProduct.stock = productData.stock;
+
+          await existingProduct.save();
+          createdProducts.push(existingProduct);
+          console.log(
+            `Product updated: ${existingProduct.name} (${existingProduct.category})`
+          );
+        }
+      } catch (error) {
+        console.error(
+          `Error creating/updating product ${productData.name}:`,
+          error
+        );
+      }
+    }
+
+    // Seed orders (for regular user)
+    const regularUser = createdUsers.find((user) => user.role === "user");
+
+    // Only create orders if they don't exist for this user already
+    const existingOrders = await Order.countDocuments({
+      user: regularUser._id,
+    });
+
+    if (existingOrders === 0) {
+      console.log("Seeding orders...");
+
+      // Create some sample orders
+      const numberOfOrders = 5; // Increased from 3 to 5 for better testing
+      for (let i = 0; i < numberOfOrders; i++) {
+        // Randomly select 1-4 products
+        const numProducts = Math.floor(Math.random() * 4) + 1;
+        const orderProducts = [];
+        const usedProductIds = new Set();
+
+        for (let j = 0; j < numProducts; j++) {
+          let randomProduct;
+
+          // Ensure we don't add the same product twice
+          do {
+            randomProduct =
+              createdProducts[
+                Math.floor(Math.random() * createdProducts.length)
+              ];
+          } while (usedProductIds.has(randomProduct._id.toString()));
+
+          usedProductIds.add(randomProduct._id.toString());
+
+          // Random quantity between 1 and 3
+          const quantity = Math.floor(Math.random() * 3) + 1;
+
+          orderProducts.push({
+            product: randomProduct._id,
+            name: randomProduct.name,
+            quantity: quantity,
+            price: randomProduct.price,
+          });
+        }
+
+        // Calculate total
+        const total = orderProducts.reduce(
+          (sum, item) => sum + item.price * item.quantity,
+          0
+        );
+
+        // Random status
+        const statuses = ["pending", "processing", "shipped", "delivered"];
+        const status = statuses[Math.floor(Math.random() * statuses.length)];
+
+        // Randomly choose between credit_card and cash_on_delivery
+        const paymentMethods = ["credit_card", "cash_on_delivery"];
+        const paymentMethod =
+          paymentMethods[Math.floor(Math.random() * paymentMethods.length)];
+
+        // Create order object
+        const orderData = {
+          user: regularUser._id,
+          items: orderProducts,
+          total: total,
+          shippingAddress: {
+            street: "123 Main St",
+            city: "Anytown",
+            postalCode: "12345",
+            country: "Country",
+          },
+          paymentMethod: paymentMethod,
+          status: status,
+          createdAt: getRandomDate(),
+        };
+
+        // Add payment details for credit card orders
+        if (paymentMethod === "credit_card") {
+          orderData.paymentDetails = {
+            paymentIntentId: generateMockPaymentIntentId(),
+            paymentStatus: "succeeded",
+          };
+        }
+
+        // Create the order
+        const order = await Order.create(orderData);
+
+        console.log(
+          `Order created: ${order._id} (${status}) with ${numProducts} products, payment: ${paymentMethod}`
+        );
+      }
+    } else {
+      console.log(
+        `${existingOrders} orders already exist for user ${regularUser.username}.`
+      );
+    }
+
+    // Seed settings
+    console.log("Checking for settings...");
+
+    // Check and create carousel settings
+    const carouselSettings = await Settings.findOne({ key: "carousel" });
+    if (!carouselSettings) {
+      console.log("Creating carousel settings...");
+      await Settings.create({
+        key: "carousel",
+        value: {
+          autoPlay: true,
+          interval: 5000,
+        },
+      });
+      console.log("Carousel settings created");
+    } else {
+      console.log("Carousel settings already exist");
+    }
+
+    console.log("Database seeding completed successfully!");
+
+    // Print login credentials for quick testing
+    console.log("\n----- TEST ACCOUNTS -----");
+    for (const user of users) {
+      console.log(
+        `${user.role.toUpperCase()}: Email: ${user.email}, Password: ${
+          user.password
+        }`
+      );
+    }
+    console.log("-----------------------\n");
+
+    return true;
+  } catch (err) {
+    console.error("Error seeding database:", err);
+    return false;
+  } finally {
+    // Disconnect from database
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+      console.log("Disconnected from MongoDB");
+    }
+  }
+};
+
+// Check for command line arguments
+if (require.main === module) {
+  // This script is being run directly
+  const clearDB = process.argv.includes("--clear");
+
+  seedDatabase(clearDB)
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      process.exit(1);
+    });
+} else {
+  // This script is being required/imported
+  module.exports = seedDatabase;
+}
