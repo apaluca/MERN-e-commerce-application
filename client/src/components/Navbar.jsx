@@ -295,6 +295,13 @@ const Navbar = () => {
                 >
                   Manage Orders
                 </Link>
+                <Link
+                  to="/admin/carousel"
+                  className="block px-3 py-2 rounded-md hover:bg-gray-700 pl-6"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Carousel Settings
+                </Link>
               </>
             )}
           </div>

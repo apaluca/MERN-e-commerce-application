@@ -23,7 +23,7 @@ router.get("/:key", async (req, res) => {
 router.put("/:key", auth, authorize("admin"), async (req, res) => {
   try {
     const { key } = req.params;
-    const value = req.body; // ✅ Correct way to extract value
+    const value = req.body;
 
     console.log("Updating setting:", key, "with value:", value);
 
@@ -37,7 +37,7 @@ router.put("/:key", auth, authorize("admin"), async (req, res) => {
 
       const processedValue = {
         autoPlay: typeof value.autoPlay === "boolean" ? value.autoPlay : true,
-        interval: parseInt(value.interval) || 5000,
+        interval: parseInt(value.interval) || 4000,
       };
 
       const setting = await Settings.findOneAndUpdate(

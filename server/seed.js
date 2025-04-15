@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 
-const ProductCarousel = ({ products, autoPlay = true, interval = 5000 }) => {
+const ProductCarousel = ({ products, autoPlay = true, interval = 4000 }) => {
   // Separate autoplay default from user preference
   const [autoPlayEnabled, setAutoPlayEnabled] = useState(autoPlay);
   const [isHovering, setIsHovering] = useState(false);

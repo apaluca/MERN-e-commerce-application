@@ -85,18 +85,24 @@ const CartPage = () => {
                   <tr key={item.product._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-12 w-12">
-                          <img
-                            className="h-12 w-12 object-cover rounded-md"
-                            src={item.product.imageUrl}
-                            alt={item.product.name}
-                          />
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <Link
+                            to={`/products/${item.product._id}`}
+                            title="View product details"
+                          >
+                            <img
+                              className="h-10 w-10 rounded-md object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                            />
+                          </Link>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
                             <Link
                               to={`/products/${item.product._id}`}
-                              className="hover:text-blue-500"
+                              className="hover:text-blue-600 transition-colors"
+                              title="View product details"
                             >
                               {item.product.name}
                             </Link>
@@ -115,7 +121,7 @@ const CartPage = () => {
                           onClick={() =>
                             handleQuantityChange(
                               item.product._id,
-                              item.quantity - 1,
+                              item.quantity - 1
                             )
                           }
                           className="h-8 px-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200 flex items-center justify-center"
@@ -129,7 +135,7 @@ const CartPage = () => {
                           onChange={(e) =>
                             handleQuantityChange(
                               item.product._id,
-                              parseInt(e.target.value) || 1,
+                              parseInt(e.target.value) || 1
                             )
                           }
                           className="h-8 w-12 border-t border-b border-gray-300 px-2 text-center focus:outline-none appearance-none"
@@ -143,7 +149,7 @@ const CartPage = () => {
                           onClick={() =>
                             handleQuantityChange(
                               item.product._id,
-                              item.quantity + 1,
+                              item.quantity + 1
                             )
                           }
                           className="h-8 px-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200 flex items-center justify-center"

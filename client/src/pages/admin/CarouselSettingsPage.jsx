@@ -1,16 +1,65 @@
 import { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
-import Alert from "../../components/Alert";
+
+// Custom notification component
+const Notification = ({ message, type = "success", onClose }) => {
+  useEffect(() => {
+    // Auto-dismiss after 3 seconds
+    const timer = setTimeout(() => {
+      if (onClose) onClose();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed top-20 right-4 z-50 max-w-md">
+      <div
+        className={`${
+          type === "success"
+            ? "bg-green-100 border-green-400 text-green-700"
+            : "bg-red-100 border-red-400 text-red-700"
+        } px-4 py-3 rounded border shadow-md flex items-center justify-between`}
+      >
+        <span className="block mr-6">{message}</span>
+        <button
+          onClick={onClose}
+          className="text-gray-500 hover:text-gray-700"
+          aria-label="Close"
+        >
+          <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fillRule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const CarouselSettingsPage = () => {
   const { API, setError } = useAppContext();
   const [products, setProducts] = useState([]);
-  const [settings, setSettings] = useState({ autoPlay: true, interval: 5000 });
+  const [settings, setSettings] = useState({ autoPlay: true, interval: 4000 });
   const [initialSettings, setInitialSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // State for our custom notification
+  const [notification, setNotification] = useState(null);
+  // { message: "Message text", type: "success" | "error" }
+
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+  };
+
+  const hideNotification = () => {
+    setNotification(null);
+  };
 
   useEffect(() => {
     let active = true;
@@ -41,9 +90,18 @@ const CarouselSettingsPage = () => {
     };
   }, [API, setError]);
 
+  // Filter products by search query
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+
+    return products.filter((p) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [products, searchQuery]);
+
   const featuredProducts = useMemo(
-    () => products.filter((p) => p.featured),
-    [products]
+    () => filteredProducts.filter((p) => p.featured),
+    [filteredProducts]
   );
 
   const handleSettingChange = (e) => {
@@ -61,22 +119,20 @@ const CarouselSettingsPage = () => {
 
   const saveSettings = async () => {
     if (!hasChanged) {
-      setSuccessMessage("No changes to save.");
-      setTimeout(() => setSuccessMessage(""), 2500);
+      showNotification("No changes to save.");
       return;
     }
 
     try {
       setSaving(true);
       await API.put("/settings/carousel", settings);
-      setSuccessMessage("Settings saved.");
       setInitialSettings(settings);
+      showNotification("Settings saved successfully.");
     } catch (err) {
       console.error(err);
-      setError("Failed to save carousel settings.");
+      showNotification("Failed to save carousel settings.", "error");
     } finally {
       setSaving(false);
-      setTimeout(() => setSuccessMessage(""), 2500);
     }
   };
 
@@ -87,13 +143,14 @@ const CarouselSettingsPage = () => {
       setProducts((prev) =>
         prev.map((p) => (p._id === id ? { ...p, featured } : p))
       );
-      setSuccessMessage(`Product ${featured ? "featured" : "unfeatured"}`);
+      showNotification(
+        `Product ${featured ? "featured" : "unfeatured"} successfully.`
+      );
     } catch (err) {
       console.error(err);
-      setError("Could not update product.");
+      showNotification("Could not update product.", "error");
     } finally {
       setSaving(false);
-      setTimeout(() => setSuccessMessage(""), 2500);
     }
   };
 
@@ -107,7 +164,13 @@ const CarouselSettingsPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4">
-      <Alert message={successMessage} type="success" />
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={hideNotification}
+        />
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* SETTINGS PANEL */}
@@ -153,6 +216,16 @@ const CarouselSettingsPage = () => {
             {featuredProducts.length} currently featured.
           </p>
 
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Search products by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
           <div className="max-h-[28rem] overflow-y-auto border rounded">
             <table className="w-full text-sm">
               <thead className="sticky top-0 bg-gray-50">
@@ -162,33 +235,46 @@ const CarouselSettingsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => (
-                  <tr key={p._id} className="border-t">
-                    <td className="px-4 py-2">
-                      <div className="flex items-center">
-                        <img
-                          src={p.imageUrl}
-                          alt={p.name}
-                          className="w-10 h-10 object-cover rounded mr-3"
-                        />
-                        <div>
-                          <div className="font-medium">{p.name}</div>
-                          <div className="text-xs text-gray-500">
-                            ${p.price} - {p.category}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-2">
-                      <input
-                        type="checkbox"
-                        checked={p.featured}
-                        disabled={saving}
-                        onChange={() => toggleFeatured(p._id, !p.featured)}
-                      />
+                {filteredProducts.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="2"
+                      className="px-4 py-8 text-center text-gray-500"
+                    >
+                      {searchQuery
+                        ? "No products match your search."
+                        : "No products found."}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredProducts.map((p) => (
+                    <tr key={p._id} className="border-t">
+                      <td className="px-4 py-2">
+                        <div className="flex items-center">
+                          <img
+                            src={p.imageUrl}
+                            alt={p.name}
+                            className="w-10 h-10 object-cover rounded mr-3"
+                          />
+                          <div>
+                            <div className="font-medium">{p.name}</div>
+                            <div className="text-xs text-gray-500">
+                              ${p.price.toFixed(2)} - {p.category}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type="checkbox"
+                          checked={p.featured}
+                          disabled={saving}
+                          onChange={() => toggleFeatured(p._id, !p.featured)}
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

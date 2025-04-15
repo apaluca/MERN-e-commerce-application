@@ -10,7 +10,7 @@ const HomePage = () => {
   const [categories, setCategories] = useState([]);
   const [carouselSettings, setCarouselSettings] = useState({
     autoPlay: true,
-    interval: 5000,
+    interval: 4000,
   });
 
   useEffect(() => {
@@ -19,7 +19,7 @@ const HomePage = () => {
         setLoading(true);
 
         // Fetch featured products for carousel
-        const response = await API.get("/products?featured=true&limit=5");
+        const response = await API.get("/products?featured=true");
 
         // Check if the response has the expected structure
         if (response.data && response.data.products) {
@@ -28,7 +28,7 @@ const HomePage = () => {
           // Fallback in case the API returns just an array of products
           setFeaturedProducts(
             Array.isArray(response.data)
-              ? response.data.filter((p) => p.featured).slice(0, 5)
+              ? response.data.filter((p) => p.featured)
               : []
           );
         }
