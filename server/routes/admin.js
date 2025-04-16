@@ -1,6 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
+const Order = require("../models/Order");
+const Review = require("../models/Review");
+const Cart = require("../models/Cart");
 const { auth, authorize } = require("../middleware/auth");
 
 // Get all users (admin only)
@@ -118,7 +121,20 @@ router.delete("/users/:id", auth, authorize("admin"), async (req, res) => {
       });
     }
 
-    await User.findByIdAndDelete(req.params.id);
+    // Cascading delete: remove all data related to this user
+    await Promise.all([
+      // Delete all orders created by this user
+      Order.deleteMany({ user: user._id }),
+
+      // Delete all reviews created by this user
+      Review.deleteMany({ user: user._id }),
+
+      // Delete user's cart
+      Cart.deleteMany({ user: user._id }),
+
+      // Delete the user
+      User.findByIdAndDelete(req.params.id),
+    ]);
 
     res.json({ message: "User deleted successfully" });
   } catch (err) {

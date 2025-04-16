@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
+const Review = require("../models/Review");
+const Cart = require("../models/Cart");
 const { auth, authorize } = require("../middleware/auth");
 
 // Get all products with pagination and filtering - PUBLIC ROUTE
@@ -148,7 +150,7 @@ router.put("/:id", auth, authorize("admin"), async (req, res) => {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     );
 
     res.json(updatedProduct);
@@ -157,7 +159,7 @@ router.put("/:id", auth, authorize("admin"), async (req, res) => {
   }
 });
 
-// Delete product (admin only)
+// Delete product (admin only) with cascading delete
 router.delete("/:id", auth, authorize("admin"), async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -165,7 +167,28 @@ router.delete("/:id", auth, authorize("admin"), async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    await Product.findByIdAndDelete(req.params.id);
+    const productId = product._id;
+
+    // Cascading delete: remove all data related to this product
+    await Promise.all([
+      // Delete all reviews for this product
+      Review.deleteMany({ product: productId }),
+
+      // Remove product from all user carts
+      Cart.updateMany(
+        { "items.product": productId },
+        { $pull: { items: { product: productId } } }
+      ),
+
+      // Recalculate cart totals after removing the product
+      Cart.find({ "items.product": productId }).then((carts) => {
+        return Promise.all(carts.map((cart) => cart.save()));
+      }),
+
+      // Delete the product itself
+      Product.findByIdAndDelete(productId),
+    ]);
+
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: err.message });
