@@ -14,7 +14,7 @@ const ProductCard = ({ product, handleAddToCart, user }) => {
         <img
           src={mainImage}
           alt={product.name}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-contain"
         />
         {hasMultipleImages && (
           <span className="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-xs px-2 py-1 rounded-md">
