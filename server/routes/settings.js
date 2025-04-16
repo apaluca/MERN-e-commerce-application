@@ -43,7 +43,7 @@ router.put("/:key", auth, authorize("admin"), async (req, res) => {
       const setting = await Settings.findOneAndUpdate(
         { key },
         { value: processedValue },
-        { upsert: true, new: true }
+        { upsert: true, new: true },
       );
 
       return res.json({ key: setting.key, value: setting.value });
@@ -53,7 +53,7 @@ router.put("/:key", auth, authorize("admin"), async (req, res) => {
     const setting = await Settings.findOneAndUpdate(
       { key },
       { value },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
 
     res.json({ key: setting.key, value: setting.value });

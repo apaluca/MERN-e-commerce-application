@@ -17,14 +17,14 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 4000 }) => {
   // Handle next slide - memoized with useCallback to avoid recreating on every render
   const nextSlide = useCallback(() => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === products.length - 1 ? 0 : prevIndex + 1
+      prevIndex === products.length - 1 ? 0 : prevIndex + 1,
     );
   }, [products.length]);
 
   // Handle previous slide
   const prevSlide = useCallback(() => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? products.length - 1 : prevIndex - 1
+      prevIndex === 0 ? products.length - 1 : prevIndex - 1,
     );
   }, [products.length]);
 

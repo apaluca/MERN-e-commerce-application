@@ -27,6 +27,7 @@ const adminRoutes = require("./routes/admin");
 const reviewRoutes = require("./routes/review");
 const paymentRoutes = require("./routes/payment");
 const settingsRoutes = require("./routes/settings");
+const uploadRoutes = require("./routes/upload");
 
 // API routes
 app.use("/auth", authRoutes);
@@ -37,6 +38,7 @@ app.use("/admin", adminRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/settings", settingsRoutes);
+app.use("/upload", uploadRoutes);
 
 // MongoDB Connection
 mongoose
@@ -59,7 +61,7 @@ if (!process.env.JWT_SECRET) {
 // Check Stripe Secret Key
 if (!process.env.STRIPE_SECRET_KEY) {
   console.error(
-    "WARNING: STRIPE_SECRET_KEY is not defined in environment variables"
+    "WARNING: STRIPE_SECRET_KEY is not defined in environment variables",
   );
 } else {
   console.log("STRIPE_SECRET_KEY is properly configured");

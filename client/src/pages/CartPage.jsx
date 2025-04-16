@@ -121,7 +121,7 @@ const CartPage = () => {
                           onClick={() =>
                             handleQuantityChange(
                               item.product._id,
-                              item.quantity - 1
+                              item.quantity - 1,
                             )
                           }
                           className="h-8 px-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-l-md hover:bg-gray-200 flex items-center justify-center"
@@ -135,7 +135,7 @@ const CartPage = () => {
                           onChange={(e) =>
                             handleQuantityChange(
                               item.product._id,
-                              parseInt(e.target.value) || 1
+                              parseInt(e.target.value) || 1,
                             )
                           }
                           className="h-8 w-12 border-t border-b border-gray-300 px-2 text-center focus:outline-none appearance-none"
@@ -149,7 +149,7 @@ const CartPage = () => {
                           onClick={() =>
                             handleQuantityChange(
                               item.product._id,
-                              item.quantity + 1
+                              item.quantity + 1,
                             )
                           }
                           className="h-8 px-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-r-md hover:bg-gray-200 flex items-center justify-center"

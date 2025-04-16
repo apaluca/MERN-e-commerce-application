@@ -136,7 +136,7 @@ const ProductsPage = () => {
           // Extract unique categories from the products array
           const uniqueCategories = [
             ...new Set(
-              response.data.products.map((product) => product.category)
+              response.data.products.map((product) => product.category),
             ),
           ];
           setCategories(uniqueCategories);
@@ -233,18 +233,18 @@ const ProductsPage = () => {
   // Filter products
   const filteredProducts = products
     .filter(
-      (product) => !selectedCategory || product.category === selectedCategory
+      (product) => !selectedCategory || product.category === selectedCategory,
     )
     .filter(
       (product) =>
         !searchQuery ||
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()),
     )
     .filter(
       (product) =>
         (!priceRange.min || product.price >= parseFloat(priceRange.min)) &&
-        (!priceRange.max || product.price <= parseFloat(priceRange.max))
+        (!priceRange.max || product.price <= parseFloat(priceRange.max)),
     );
 
   // Sort products
@@ -269,7 +269,7 @@ const ProductsPage = () => {
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
   const currentProducts = sortedProducts.slice(
     indexOfFirstProduct,
-    indexOfLastProduct
+    indexOfLastProduct,
   );
 
   // Reset to page 1 when filters change

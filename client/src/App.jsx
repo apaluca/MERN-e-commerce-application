@@ -25,6 +25,7 @@ import OrderDetailPage from "./pages/OrderDetailPage";
 import AdminDashboardPage from "./pages/admin/DashboardPage";
 import AdminUsersPage from "./pages/admin/UsersPage";
 import AdminProductsPage from "./pages/admin/ProductsPage";
+import ProductEditPage from "./pages/admin/ProductEditPage";
 import AdminOrdersPage from "./pages/admin/OrdersPage";
 import CarouselSettingsPage from "./pages/admin/CarouselSettingsPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -147,6 +148,22 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminProductsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/products/new"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ProductEditPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/products/edit/:id"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <ProductEditPage />
                     </ProtectedRoute>
                   }
                 />

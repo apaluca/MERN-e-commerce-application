@@ -19,10 +19,18 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: "https://dummyimage.com/200x200/e0e0e0/333333&text=Product",
   },
+  imagePublicId: {
+    type: String, // Store Cloudinary public ID for main image
+    default: "",
+  },
   images: {
-    type: [String],
+    type: [String], // Array of image URLs
     default: [],
     validate: [arrayLimit, "{PATH} exceeds the limit of 5"],
+  },
+  imagesPublicIds: {
+    type: [String], // Array of Cloudinary public IDs for additional images
+    default: [],
   },
   category: {
     type: String,

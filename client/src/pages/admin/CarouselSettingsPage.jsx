@@ -95,13 +95,13 @@ const CarouselSettingsPage = () => {
     if (!searchQuery.trim()) return products;
 
     return products.filter((p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [products, searchQuery]);
 
   const featuredProducts = useMemo(
     () => filteredProducts.filter((p) => p.featured),
-    [filteredProducts]
+    [filteredProducts],
   );
 
   const handleSettingChange = (e) => {
@@ -114,7 +114,7 @@ const CarouselSettingsPage = () => {
 
   const hasChanged = useMemo(
     () => JSON.stringify(settings) !== JSON.stringify(initialSettings),
-    [settings, initialSettings]
+    [settings, initialSettings],
   );
 
   const saveSettings = async () => {
@@ -141,10 +141,10 @@ const CarouselSettingsPage = () => {
       setSaving(true);
       await API.put(`/products/${id}`, { featured });
       setProducts((prev) =>
-        prev.map((p) => (p._id === id ? { ...p, featured } : p))
+        prev.map((p) => (p._id === id ? { ...p, featured } : p)),
       );
       showNotification(
-        `Product ${featured ? "featured" : "unfeatured"} successfully.`
+        `Product ${featured ? "featured" : "unfeatured"} successfully.`,
       );
     } catch (err) {
       console.error(err);

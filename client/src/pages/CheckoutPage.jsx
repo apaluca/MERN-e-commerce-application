@@ -198,7 +198,7 @@ const CheckoutPage = () => {
       const result = await createOrder(
         shippingAddress,
         formData.paymentMethod,
-        paymentDetails
+        paymentDetails,
       );
 
       if (result.success) {

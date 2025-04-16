@@ -224,7 +224,7 @@ export const AppProvider = ({ children }) => {
   const createOrder = async (
     shippingAddress,
     paymentMethod,
-    paymentDetails = null
+    paymentDetails = null,
   ) => {
     try {
       setLoading(true);

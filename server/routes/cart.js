@@ -42,7 +42,7 @@ router.post("/add", auth, async (req, res) => {
 
     // Check if product already in cart
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     // Calculate new total quantity (existing + new)
@@ -116,7 +116,7 @@ router.put("/update", auth, async (req, res) => {
 
     // Find item in cart
     const itemIndex = cart.items.findIndex(
-      (item) => item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (itemIndex === -1) {
@@ -152,7 +152,7 @@ router.delete("/remove/:productId", auth, async (req, res) => {
 
     // Remove item
     cart.items = cart.items.filter(
-      (item) => item.product.toString() !== productId
+      (item) => item.product.toString() !== productId,
     );
 
     await cart.save();

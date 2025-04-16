@@ -52,7 +52,7 @@ const CreditCardForm = ({
       console.error("Error creating payment intent:", err);
       onPaymentError(
         err.response?.data?.message ||
-          "Failed to initialize payment. Please try again."
+          "Failed to initialize payment. Please try again.",
       );
     }
   };

@@ -65,8 +65,8 @@ const AdminOrdersPage = () => {
         orders.map((order) =>
           order._id === selectedOrder._id
             ? { ...order, status: orderStatus }
-            : order
-        )
+            : order,
+        ),
       );
 
       handleCloseModal();

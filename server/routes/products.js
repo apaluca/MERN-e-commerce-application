@@ -4,6 +4,7 @@ const Product = require("../models/Product");
 const Review = require("../models/Review");
 const Cart = require("../models/Cart");
 const { auth, authorize } = require("../middleware/auth");
+const { cloudinary } = require("../utils/cloudinaryConfig");
 
 // Get all products with pagination and filtering - PUBLIC ROUTE
 router.get("/", async (req, res) => {
@@ -147,10 +148,44 @@ router.put("/:id", auth, authorize("admin"), async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    // Handle main image changes
+    if (req.body.imageUrl !== product.imageUrl && product.imagePublicId) {
+      // Only delete if this is a Cloudinary image (has a public ID)
+      // and it's actually being changed
+      try {
+        await cloudinary.uploader.destroy(product.imagePublicId);
+      } catch (cloudinaryError) {
+        console.error("Error deleting image from Cloudinary:", cloudinaryError);
+      }
+    }
+
+    // Handle additional images - find and delete removed images
+    if (req.body.imagesPublicIds && product.imagesPublicIds) {
+      const removedPublicIds = product.imagesPublicIds.filter(
+        (publicId) => !req.body.imagesPublicIds.includes(publicId),
+      );
+
+      // Delete removed images from Cloudinary
+      if (removedPublicIds.length > 0) {
+        try {
+          await Promise.all(
+            removedPublicIds.map((publicId) =>
+              cloudinary.uploader.destroy(publicId),
+            ),
+          );
+        } catch (cloudinaryError) {
+          console.error(
+            "Error deleting images from Cloudinary:",
+            cloudinaryError,
+          );
+        }
+      }
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     res.json(updatedProduct);
@@ -169,6 +204,32 @@ router.delete("/:id", auth, authorize("admin"), async (req, res) => {
 
     const productId = product._id;
 
+    // Delete images from Cloudinary if they have public IDs
+    if (product.imagePublicId) {
+      try {
+        await cloudinary.uploader.destroy(product.imagePublicId);
+      } catch (cloudinaryError) {
+        console.error("Error deleting image from Cloudinary:", cloudinaryError);
+        // Continue execution even if deletion fails
+      }
+    }
+
+    if (product.imagesPublicIds && product.imagesPublicIds.length > 0) {
+      try {
+        await Promise.all(
+          product.imagesPublicIds.map((publicId) =>
+            cloudinary.uploader.destroy(publicId),
+          ),
+        );
+      } catch (cloudinaryError) {
+        console.error(
+          "Error deleting images from Cloudinary:",
+          cloudinaryError,
+        );
+        // Continue execution even if deletion fails
+      }
+    }
+
     // Cascading delete: remove all data related to this product
     await Promise.all([
       // Delete all reviews for this product
@@ -177,7 +238,7 @@ router.delete("/:id", auth, authorize("admin"), async (req, res) => {
       // Remove product from all user carts
       Cart.updateMany(
         { "items.product": productId },
-        { $pull: { items: { product: productId } } }
+        { $pull: { items: { product: productId } } },
       ),
 
       // Recalculate cart totals after removing the product

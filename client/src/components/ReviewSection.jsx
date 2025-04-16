@@ -54,8 +54,8 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
             order.items.some(
               (item) =>
                 item.product === productId ||
-                (item.product._id && item.product._id === productId)
-            ) && order.status === "delivered" // Only delivered orders qualify
+                (item.product._id && item.product._id === productId),
+            ) && order.status === "delivered", // Only delivered orders qualify
         );
 
         setHasPurchased(purchased);
@@ -67,7 +67,7 @@ const ReviewForm = ({ productId, onReviewAdded }) => {
             (review) =>
               review.product._id === productId ||
               (typeof review.product === "string" &&
-                review.product === productId)
+                review.product === productId),
           );
 
           setHasReviewed(alreadyReviewed);

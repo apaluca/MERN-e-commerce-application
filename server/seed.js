@@ -30,8 +30,8 @@ const users = [
       street: "123 Main Street",
       city: "Bucharest",
       postalCode: "12345",
-      country: "Romania"
-    }
+      country: "Romania",
+    },
   },
 ];
 
@@ -48,18 +48,26 @@ const categories = [
 
 // Sample product data with multiple images
 const products = [
-  // Electronics Category
+  // Electronics Category - FEATURED CAROUSEL ITEMS (first 5 products)
+  // These will be marked for Cloudinary integration
   {
     name: "Smartphone X",
     description:
       "Latest smartphone with high-end features including 6.5-inch display, 128GB storage, and 48MP camera. Includes fast charging and water resistance.",
     price: 899.99,
-    imageUrl: "https://dummyimage.com/400x300/000/fff&text=Smartphone+Front",
+    imageUrl:
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832008/smartphone-main.png",
     images: [
-      "https://dummyimage.com/400x300/000/fff&text=Smartphone+Back",
-      "https://dummyimage.com/400x300/000/fff&text=Smartphone+Side",
-      "https://dummyimage.com/400x300/000/fff&text=Smartphone+Camera",
-      "https://dummyimage.com/400x300/000/fff&text=Smartphone+UI",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832008/smartphone-front.png",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832008/smartphone-side.png",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832007/smartphone-back.png",
+    ],
+    // Cloudinary IDs will be added for these featured products
+    imagePublicId: "react-retail/smartphone-main",
+    imagesPublicIds: [
+      "react-retail/smartphone-front",
+      "react-retail/smartphone-side",
+      "react-retail/smartphone-back",
     ],
     category: "electronics",
     stock: 25,
@@ -70,11 +78,21 @@ const products = [
     description:
       "Powerful laptop with 16GB RAM, 512GB SSD, and dedicated graphics card perfect for professionals and gamers alike.",
     price: 1299.99,
-    imageUrl: "https://dummyimage.com/400x300/222/fff&text=Laptop+Front",
+    imageUrl:
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832006/laptop-main.png",
     images: [
-      "https://dummyimage.com/400x300/222/fff&text=Laptop+Open",
-      "https://dummyimage.com/400x300/222/fff&text=Laptop+Side",
-      "https://dummyimage.com/400x300/222/fff&text=Laptop+Ports",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832005/laptop-open.png",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832004/laptop-side.png",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832004/laptop-ports-right.png",
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832004/laptop-ports-left.png",
+    ],
+    // Cloudinary IDs for second featured product
+    imagePublicId: "react-retail/laptop-main",
+    imagesPublicIds: [
+      "react-retail/laptop-open",
+      "react-retail/laptop-side",
+      "react-retail/laptop-ports-right",
+      "react-retail/laptop-ports-left",
     ],
     category: "electronics",
     stock: 15,
@@ -85,13 +103,11 @@ const products = [
     description:
       "Noise-cancelling wireless headphones with 30-hour battery life and premium sound quality. Perfect for commuting or working from home.",
     price: 249.99,
-    imageUrl: "https://dummyimage.com/400x300/333/fff&text=Headphones+Front",
-    images: [
-      "https://dummyimage.com/400x300/333/fff&text=Headphones+Side",
-      "https://dummyimage.com/400x300/333/fff&text=Headphones+Case",
-      "https://dummyimage.com/400x300/333/fff&text=Headphones+Controls",
-      "https://dummyimage.com/400x300/333/fff&text=Headphones+Charging",
-    ],
+    imageUrl:
+      "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832004/headphones-main.png",
+    images: [],
+    // Cloudinary IDs for third featured product
+    imagePublicId: "react-retail/headphones-main",
     category: "electronics",
     stock: 40,
     featured: true,
@@ -127,7 +143,7 @@ const products = [
     featured: true,
   },
 
-  // Clothing Category
+  // Clothing Category - Standard items (no Cloudinary integration needed)
   {
     name: "Men's Cotton T-Shirt",
     description:
@@ -712,17 +728,55 @@ const seedDatabase = async (clearDB = false) => {
         });
 
         if (!existingProduct) {
-          const product = await Product.create(productData);
+          // For new products, make sure to include Cloudinary fields
+          // The first 5 featured products already have these placeholders
+          // For others, initialize with empty values
+          const productToCreate = { ...productData };
+
+          // Add Cloudinary fields if not already present
+          if (!productToCreate.hasOwnProperty("imagePublicId")) {
+            productToCreate.imagePublicId = ""; // Empty for non-featured products
+          }
+
+          if (!productToCreate.hasOwnProperty("imagesPublicIds")) {
+            // Create empty array matching the length of images array
+            productToCreate.imagesPublicIds = Array(
+              productToCreate.images?.length || 0
+            ).fill("");
+          }
+
+          const product = await Product.create(productToCreate);
           createdProducts.push(product);
           console.log(`Product created: ${product.name} (${product.category})`);
         } else {
-          // Update existing product with new data (especially images)
+          // Update existing product
           existingProduct.description = productData.description;
           existingProduct.price = productData.price;
           existingProduct.imageUrl = productData.imageUrl;
           existingProduct.images = productData.images || [];
           existingProduct.category = productData.category;
           existingProduct.stock = productData.stock;
+          existingProduct.featured = productData.featured || false;
+
+          // Update Cloudinary fields
+          if (productData.imagePublicId) {
+            existingProduct.imagePublicId = productData.imagePublicId;
+          } else if (!existingProduct.imagePublicId) {
+            existingProduct.imagePublicId = "";
+          }
+
+          if (productData.imagesPublicIds) {
+            existingProduct.imagesPublicIds = productData.imagesPublicIds;
+          } else if (
+            !existingProduct.imagesPublicIds ||
+            existingProduct.imagesPublicIds.length !==
+              existingProduct.images.length
+          ) {
+            // Ensure imagesPublicIds array matches images array length
+            existingProduct.imagesPublicIds = Array(
+              existingProduct.images.length
+            ).fill("");
+          }
 
           await existingProduct.save();
           createdProducts.push(existingProduct);

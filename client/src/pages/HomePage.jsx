@@ -29,7 +29,7 @@ const HomePage = () => {
           setFeaturedProducts(
             Array.isArray(response.data)
               ? response.data.filter((p) => p.featured)
-              : []
+              : [],
           );
         }
 
@@ -51,7 +51,7 @@ const HomePage = () => {
           // Extract unique categories
           const uniqueCategories = [
             ...new Set(
-              categoryRes.data.products.map((product) => product.category)
+              categoryRes.data.products.map((product) => product.category),
             ),
           ];
           setCategories(uniqueCategories);
