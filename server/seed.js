@@ -844,7 +844,7 @@ const seedDatabase = async (clearDB = false) => {
         key: "carousel",
         value: {
           autoPlay: true,
-          interval: 5000,
+          interval: 3000,
         },
       });
       console.log("Carousel settings created");
