@@ -1,22 +1,22 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-/**
- * Component that scrolls to the top of the page when the route changes
- * This ensures users always start at the top of the page on navigation
- */
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
 
   useEffect(() => {
-    // Smooth scroll to top when pathname changes
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }, [pathname]);
+    // Use a small timeout to ensure page content has rendered
+    const timeoutId = setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 50); // Small delay to ensure DOM updates first
 
-  return null; // This component doesn't render anything
+    return () => clearTimeout(timeoutId); // Clean up timeout
+  }, [pathname, search]); // Watch both pathname and search params
+
+  return null;
 };
 
 export default ScrollToTop;

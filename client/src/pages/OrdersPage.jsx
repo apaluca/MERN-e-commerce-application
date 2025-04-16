@@ -69,7 +69,15 @@ const OrdersPage = () => {
 
   // Scroll to top whenever pagination changes
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Add a small delay to ensure the DOM has updated
+    const timeoutId = setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 50);
+
+    return () => clearTimeout(timeoutId);
   }, [currentPage, itemsPerPage]);
 
   // Handle page change
