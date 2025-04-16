@@ -17,14 +17,14 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 4000 }) => {
   // Handle next slide - memoized with useCallback to avoid recreating on every render
   const nextSlide = useCallback(() => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === products.length - 1 ? 0 : prevIndex + 1,
+      prevIndex === products.length - 1 ? 0 : prevIndex + 1
     );
   }, [products.length]);
 
   // Handle previous slide
   const prevSlide = useCallback(() => {
     setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? products.length - 1 : prevIndex - 1,
+      prevIndex === 0 ? products.length - 1 : prevIndex - 1
     );
   }, [products.length]);
 
@@ -162,11 +162,10 @@ const ProductCarousel = ({ products, autoPlay = true, interval = 4000 }) => {
                   to={`/products/${product._id}`}
                   className="w-full h-1/2 sm:w-1/2 sm:h-full relative overflow-hidden group bg-gray-100"
                 >
-                  {/* Removed the color overlay that was affecting image colors */}
                   <img
                     src={product.imageUrl}
                     alt={product.name}
-                    className="object-cover w-full h-full transition-transform duration-10000 group-hover:scale-110"
+                    className="object-contain w-full h-full bg-white transition-transform duration-10000 group-hover:scale-110"
                   />
                 </Link>
 

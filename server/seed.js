@@ -125,7 +125,6 @@ const products = [
     ],
     category: "electronics",
     stock: 18,
-    featured: true,
   },
   {
     name: "Wireless Earbuds",
@@ -140,7 +139,6 @@ const products = [
     ],
     category: "electronics",
     stock: 35,
-    featured: true,
   },
 
   // Clothing Category - Standard items (no Cloudinary integration needed)
