@@ -13,7 +13,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "react-retail", // Use the app name as the folder
+    folder: "app",
     allowed_formats: ["jpg", "jpeg", "png", "gif", "webp"],
     transformation: [{ width: 1000, height: 1000, crop: "limit" }], // Resize images to max dimensions
   },

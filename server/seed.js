@@ -63,11 +63,11 @@ const products = [
       "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832007/smartphone-back.png",
     ],
     // Cloudinary IDs will be added for these featured products
-    imagePublicId: "react-retail/smartphone-main",
+    imagePublicId: "smartphone-main",
     imagesPublicIds: [
-      "react-retail/smartphone-front",
-      "react-retail/smartphone-side",
-      "react-retail/smartphone-back",
+      "smartphone-front",
+      "smartphone-side",
+      "smartphone-back",
     ],
     category: "electronics",
     stock: 25,
@@ -87,12 +87,12 @@ const products = [
       "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832004/laptop-ports-left.png",
     ],
     // Cloudinary IDs for second featured product
-    imagePublicId: "react-retail/laptop-main",
+    imagePublicId: "laptop-main",
     imagesPublicIds: [
-      "react-retail/laptop-open",
-      "react-retail/laptop-side",
-      "react-retail/laptop-ports-right",
-      "react-retail/laptop-ports-left",
+      "laptop-open",
+      "laptop-side",
+      "laptop-ports-right",
+      "laptop-ports-left",
     ],
     category: "electronics",
     stock: 15,
@@ -107,7 +107,7 @@ const products = [
       "https://res.cloudinary.com/dadvdmnvb/image/upload/v1744832004/headphones-main.png",
     images: [],
     // Cloudinary IDs for third featured product
-    imagePublicId: "react-retail/headphones-main",
+    imagePublicId: "headphones-main",
     category: "electronics",
     stock: 40,
     featured: true,
