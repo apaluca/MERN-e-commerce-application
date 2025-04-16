@@ -1,11 +1,34 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import Pagination from "../components/Pagination";
 
 const OrdersPage = () => {
   const { API, loading, setError } = useAppContext();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    // Get query parameters
+    const queryParams = new URLSearchParams(location.search);
+    const pageParam = queryParams.get("page");
+    const perPageParam = queryParams.get("perPage");
+
+    // Apply params if they exist
+    if (pageParam && !isNaN(parseInt(pageParam))) {
+      setCurrentPage(parseInt(pageParam));
+    }
+
+    if (perPageParam && !isNaN(parseInt(perPageParam))) {
+      setItemsPerPage(parseInt(perPageParam));
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -23,6 +46,48 @@ const OrdersPage = () => {
 
     fetchOrders();
   }, [API, setError]);
+
+  // Update URL with current pagination
+  useEffect(() => {
+    const queryParams = new URLSearchParams();
+
+    if (currentPage > 1) {
+      queryParams.set("page", currentPage.toString());
+    }
+
+    if (itemsPerPage !== 10) {
+      // Default value
+      queryParams.set("perPage", itemsPerPage.toString());
+    }
+
+    const queryString = queryParams.toString();
+    const newUrl = queryString ? `?${queryString}` : "";
+
+    // Replace state to avoid pushing a new history entry for each pagination change
+    navigate(`/orders${newUrl}`, { replace: true });
+  }, [navigate, currentPage, itemsPerPage]);
+
+  // Scroll to top whenever pagination changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage, itemsPerPage]);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
+  // Handle items per page change
+  const handleItemsPerPageChange = (value) => {
+    setItemsPerPage(value);
+    setCurrentPage(1); // Reset to page 1 when changing items per page
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const indexOfLastOrder = currentPage * itemsPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - itemsPerPage;
+  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
 
   // Function to format date
   const formatDate = (dateString) => {
@@ -87,96 +152,111 @@ const OrdersPage = () => {
           </Link>
         </div>
       ) : (
-        <div className="bg-white shadow-sm overflow-hidden sm:rounded-md">
-          <ul className="divide-y divide-gray-200">
-            {orders.map((order) => (
-              <li key={order._id}>
-                <div className="px-4 py-5 sm:px-6 hover:bg-gray-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col sm:flex-row sm:items-center">
-                      <h3 className="text-sm font-medium text-gray-900 mb-1 sm:mb-0 sm:mr-4">
-                        Order #{order._id.substring(order._id.length - 8)}
-                      </h3>
-                      <div className="text-sm text-gray-500">
-                        Placed on {formatDate(order.createdAt)}
+        <>
+          <div className="bg-white shadow-sm overflow-hidden sm:rounded-md">
+            <ul className="divide-y divide-gray-200">
+              {currentOrders.map((order) => (
+                <li key={order._id}>
+                  <div className="px-4 py-5 sm:px-6 hover:bg-gray-50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center">
+                        <h3 className="text-sm font-medium text-gray-900 mb-1 sm:mb-0 sm:mr-4">
+                          Order #{order._id.substring(order._id.length - 8)}
+                        </h3>
+                        <div className="text-sm text-gray-500">
+                          Placed on {formatDate(order.createdAt)}
+                        </div>
                       </div>
+                      <StatusBadge status={order.status} />
                     </div>
-                    <StatusBadge status={order.status} />
-                  </div>
 
-                  <div className="mt-4 sm:flex sm:justify-between">
-                    <div className="sm:flex">
-                      <div className="flex items-center text-sm text-gray-500">
-                        <span className="mr-2">Total:</span>
-                        <span className="font-medium text-gray-900">
-                          ${order.total.toFixed(2)}
-                        </span>
+                    <div className="mt-4 sm:flex sm:justify-between">
+                      <div className="sm:flex">
+                        <div className="flex items-center text-sm text-gray-500">
+                          <span className="mr-2">Total:</span>
+                          <span className="font-medium text-gray-900">
+                            ${order.total.toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                          <span className="mr-2">Items:</span>
+                          <span className="font-medium text-gray-900">
+                            {order.items.length}
+                          </span>
+                        </div>
                       </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                        <span className="mr-2">Items:</span>
-                        <span className="font-medium text-gray-900">
-                          {order.items.length}
-                        </span>
+                      <div className="mt-4 sm:mt-0">
+                        <Link
+                          to={`/orders/${order._id}`}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                        >
+                          View details
+                        </Link>
                       </div>
                     </div>
-                    <div className="mt-4 sm:mt-0">
-                      <Link
-                        to={`/orders/${order._id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-500"
-                      >
-                        View details
-                      </Link>
-                    </div>
-                  </div>
 
-                  <div className="mt-4">
-                    <div className="flow-root">
-                      <ul className="divide-y divide-gray-200">
-                        {order.items.slice(0, 2).map((item) => (
-                          <li key={item._id} className="py-3 flex">
-                            <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
-                              <img
-                                src={
-                                  item.product?.imageUrl ||
-                                  "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"
-                                }
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div className="ml-4 flex-1 flex flex-col">
-                              <div>
-                                <div className="flex justify-between text-sm font-medium text-gray-900">
-                                  <h4>{item.name}</h4>
-                                  <p className="ml-4">
-                                    ${(item.price * item.quantity).toFixed(2)}
+                    <div className="mt-4">
+                      <div className="flow-root">
+                        <ul className="divide-y divide-gray-200">
+                          {order.items.slice(0, 2).map((item) => (
+                            <li key={item._id} className="py-3 flex">
+                              <div className="flex-shrink-0 w-16 h-16 border border-gray-200 rounded-md overflow-hidden">
+                                <img
+                                  src={
+                                    item.product?.imageUrl ||
+                                    "https://dummyimage.com/200x200/e0e0e0/333333&text=Product"
+                                  }
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="ml-4 flex-1 flex flex-col">
+                                <div>
+                                  <div className="flex justify-between text-sm font-medium text-gray-900">
+                                    <h4>{item.name}</h4>
+                                    <p className="ml-4">
+                                      ${(item.price * item.quantity).toFixed(2)}
+                                    </p>
+                                  </div>
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    Qty: {item.quantity}
                                   </p>
                                 </div>
-                                <p className="mt-1 text-sm text-gray-500">
-                                  Qty: {item.quantity}
-                                </p>
                               </div>
-                            </div>
-                          </li>
-                        ))}
-                        {order.items.length > 2 && (
-                          <li className="py-2">
-                            <Link
-                              to={`/orders/${order._id}`}
-                              className="text-sm text-gray-500 hover:text-gray-700"
-                            >
-                              + {order.items.length - 2} more item(s)
-                            </Link>
-                          </li>
-                        )}
-                      </ul>
+                            </li>
+                          ))}
+                          {order.items.length > 2 && (
+                            <li className="py-2">
+                              <Link
+                                to={`/orders/${order._id}`}
+                                className="text-sm text-gray-500 hover:text-gray-700"
+                              >
+                                + {order.items.length - 2} more item(s)
+                              </Link>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Using the reusable Pagination component */}
+          {orders.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              itemsPerPageOptions={[5, 10, 15, 20]}
+              itemsLabel="orders"
+            />
+          )}
+        </>
       )}
     </div>
   );

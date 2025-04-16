@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import Pagination from "../components/Pagination";
 
 const ProductCard = ({ product, handleAddToCart, user }) => {
   // Get main image and any additional images
@@ -60,139 +61,6 @@ const ProductCard = ({ product, handleAddToCart, user }) => {
           </div>
         </div>
       </div>
-    </div>
-  );
-};
-
-const Pagination = ({
-  currentPage,
-  totalPages,
-  onPageChange,
-  itemsPerPage,
-  onItemsPerPageChange,
-}) => {
-  const pageNumbers = [];
-
-  // Create page number array based on total pages
-  for (let i = 1; i <= totalPages; i++) {
-    pageNumbers.push(i);
-  }
-
-  // Calculate start/end for visible page numbers (show 5 at a time)
-  let startPage = Math.max(1, currentPage - 2);
-  let endPage = Math.min(totalPages, startPage + 4);
-
-  // Adjust if we're near the end
-  if (endPage - startPage < 4) {
-    startPage = Math.max(1, endPage - 4);
-  }
-
-  const visiblePageNumbers = pageNumbers.slice(startPage - 1, endPage);
-
-  return (
-    <div className="flex flex-col sm:flex-row justify-between items-center mt-8 bg-white p-4 rounded-lg shadow-sm">
-      {/* Items per page control - Always visible */}
-      <div className="mb-4 sm:mb-0">
-        <label htmlFor="itemsPerPage" className="text-sm text-gray-700 mr-2">
-          Items per page:
-        </label>
-        <select
-          id="itemsPerPage"
-          value={itemsPerPage}
-          onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value={12}>12</option>
-          <option value={24}>24</option>
-          <option value={36}>36</option>
-          <option value={48}>48</option>
-        </select>
-      </div>
-
-      {/* Pagination buttons - Only visible when multiple pages */}
-      {totalPages > 1 ? (
-        <>
-          <div className="flex items-center">
-            <button
-              onClick={() => onPageChange(1)}
-              disabled={currentPage === 1}
-              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              &laquo;
-            </button>
-
-            <button
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              &lsaquo;
-            </button>
-
-            {startPage > 1 && (
-              <>
-                <button
-                  onClick={() => onPageChange(1)}
-                  className="px-3 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
-                >
-                  1
-                </button>
-                {startPage > 2 && <span className="mx-1">...</span>}
-              </>
-            )}
-
-            {visiblePageNumbers.map((number) => (
-              <button
-                key={number}
-                onClick={() => onPageChange(number)}
-                className={`px-3 py-1 mx-1 border rounded text-sm ${
-                  currentPage === number
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "border-gray-300 hover:bg-gray-100"
-                }`}
-              >
-                {number}
-              </button>
-            ))}
-
-            {endPage < totalPages && (
-              <>
-                {endPage < totalPages - 1 && <span className="mx-1">...</span>}
-                <button
-                  onClick={() => onPageChange(totalPages)}
-                  className="px-3 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100"
-                >
-                  {totalPages}
-                </button>
-              </>
-            )}
-
-            <button
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              &rsaquo;
-            </button>
-
-            <button
-              onClick={() => onPageChange(totalPages)}
-              disabled={currentPage === totalPages}
-              className="px-2 py-1 mx-1 border border-gray-300 rounded text-sm hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              &raquo;
-            </button>
-          </div>
-
-          <div className="hidden sm:block text-sm text-gray-500">
-            Page {currentPage} of {totalPages}
-          </div>
-        </>
-      ) : (
-        <div className="hidden sm:block text-sm text-gray-500">
-          Showing all items
-        </div>
-      )}
     </div>
   );
 };
@@ -268,7 +136,7 @@ const ProductsPage = () => {
           // Extract unique categories from the products array
           const uniqueCategories = [
             ...new Set(
-              response.data.products.map((product) => product.category),
+              response.data.products.map((product) => product.category)
             ),
           ];
           setCategories(uniqueCategories);
@@ -337,6 +205,11 @@ const ProductsPage = () => {
     priceRange,
   ]);
 
+  // Scroll to top whenever pagination changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage, itemsPerPage]);
+
   const handleAddToCart = async (productId) => {
     if (!user) {
       setError("Please login to add items to cart");
@@ -352,18 +225,18 @@ const ProductsPage = () => {
   // Filter products
   const filteredProducts = products
     .filter(
-      (product) => !selectedCategory || product.category === selectedCategory,
+      (product) => !selectedCategory || product.category === selectedCategory
     )
     .filter(
       (product) =>
         !searchQuery ||
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()),
+        product.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .filter(
       (product) =>
         (!priceRange.min || product.price >= parseFloat(priceRange.min)) &&
-        (!priceRange.max || product.price <= parseFloat(priceRange.max)),
+        (!priceRange.max || product.price <= parseFloat(priceRange.max))
     );
 
   // Sort products
@@ -388,7 +261,7 @@ const ProductsPage = () => {
   const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
   const currentProducts = sortedProducts.slice(
     indexOfFirstProduct,
-    indexOfLastProduct,
+    indexOfLastProduct
   );
 
   // Reset to page 1 when filters change
@@ -399,7 +272,6 @@ const ProductsPage = () => {
   // Handle page change
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Handle items per page change
@@ -564,14 +436,18 @@ const ProductsPage = () => {
               ))}
             </div>
 
-            {/* Pagination */}
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-              itemsPerPage={itemsPerPage}
-              onItemsPerPageChange={handleItemsPerPageChange}
-            />
+            {/* Using the reusable Pagination component */}
+            {sortedProducts.length > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                itemsPerPage={itemsPerPage}
+                onItemsPerPageChange={handleItemsPerPageChange}
+                itemsPerPageOptions={[12, 24, 36, 48]}
+                itemsLabel="products"
+              />
+            )}
           </>
         )}
       </div>
