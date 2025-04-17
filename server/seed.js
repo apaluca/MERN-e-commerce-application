@@ -48,7 +48,7 @@ const categories = [
 
 // Sample product data with multiple images
 const products = [
-  // Electronics Category - FEATURED CAROUSEL ITEMS (first 5 products)
+  // Electronics Category - FEATURED CAROUSEL ITEMS (first 3 products)
   // These will be marked for Cloudinary integration
   {
     name: "Smartphone X",
