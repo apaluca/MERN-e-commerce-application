@@ -1,4 +1,4 @@
-# ReactRetail Project (MERN stack application)
+# LucEst Project (MERN stack application)
 
 A full-stack e-commerce application using MongoDB, Express, React with Vite, and Node.js with Tailwind CSS.
 
@@ -18,8 +18,8 @@ A full-stack e-commerce application using MongoDB, Express, React with Vite, and
 
 ```bash
 # Clone repository
-git clone https://github.com/apaluca/ReactRetail.git
-cd ReactRetail
+git clone https://github.com/apaluca/LucEst.git
+cd LucEst
 
 # Backend setup
 cd server
@@ -62,7 +62,7 @@ Access:
 ## Project Structure
 
 ```
-ReactRetail/
+LucEst/
 ├── client/                   # React frontend (Vite + Tailwind)
 │   ├── public/               # Static files
 │   └── src/                  # Source files

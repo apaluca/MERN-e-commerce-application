@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="md:flex md:justify-between">
           <div className="mb-6 md:mb-0">
             <Link to="/" className="flex items-center">
-              <span className="text-xl font-semibold">ReactRetail</span>
+              <span className="text-xl font-semibold">LucEst</span>
             </Link>
             <p className="mt-2 text-sm text-gray-400">
               Your one-stop shop for everything you need
@@ -92,7 +92,7 @@ const Footer = () => {
 
         <div className="flex flex-col md:flex-row md:justify-between">
           <span className="text-sm text-gray-400">
-            © {currentYear} ReactRetail. All rights reserved.
+            © {currentYear} LucEst. All rights reserved.
           </span>
           <div className="flex mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-white mr-4">

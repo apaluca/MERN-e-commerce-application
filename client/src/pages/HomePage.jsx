@@ -84,7 +84,7 @@ const HomePage = () => {
           <div className="flex flex-col items-center">
             <div className="w-full text-center">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
-                Welcome to ReactRetail
+                Welcome to LucEst
               </h1>
               <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto">
                 Your one-stop shop for all your shopping needs. Find the best
