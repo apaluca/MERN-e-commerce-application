@@ -108,17 +108,6 @@ const LoginPage = () => {
             </Link>
           </p>
         </div>
-
-        {/* Test credentials */}
-        <div className="mt-8 p-3 bg-gray-50 rounded-md">
-          <p className="text-sm text-gray-700 font-medium mb-2">
-            Test Accounts:
-          </p>
-          <ul className="text-xs text-gray-600 space-y-1">
-            <li>Admin: admin@example.com / password123</li>
-            <li>User: user@example.com / password123</li>
-          </ul>
-        </div>
       </div>
     </div>
   );
