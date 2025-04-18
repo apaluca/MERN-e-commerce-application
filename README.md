@@ -18,7 +18,7 @@ A full-stack e-commerce application using MongoDB, Express, React with Vite, and
 
 ```bash
 # Clone repository
-git clone https://github.com/apaluca/LucEst.git
+git clone https://github.com/apaluca/MERN-e-commerce-application.git
 cd LucEst
 
 # Backend setup
