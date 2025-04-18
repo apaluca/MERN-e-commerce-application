@@ -96,6 +96,10 @@ Access:
 
 ## Project Structure
 
+### Directory Organization
+
+The following tree shows the main files and directories that make up the application:
+
 ```
 MERN-e-commerce-application/
 ├── client/                   # React frontend (Vite + Tailwind)
@@ -118,6 +122,37 @@ MERN-e-commerce-application/
     ├── seed.js               # Database seeding script
     └── server.js             # Entry point
 ```
+
+### Component Hierarchy
+
+- **Layout Components**: Provide structural consistency across pages
+  - `Navbar.jsx`: Dynamic navigation based on authentication/role
+  - `Footer.jsx`: Site-wide footer with navigation links
+  - `Alert.jsx`: Global notification system
+
+- **Page Components**: Individual route destinations with page-specific logic
+  - Standard pages (e.g., `HomePage.jsx`, `ProductsPage.jsx`)
+  - Authentication pages (e.g., `LoginPage.jsx`, `RegisterPage.jsx`)
+  - Protected pages (e.g., `ProfilePage.jsx`, `OrdersPage.jsx`)
+  - Admin pages (e.g., `DashboardPage.jsx`, `UsersPage.jsx`)
+
+- **Reusable UI Components**: Modular elements used across multiple pages
+  - `ProductCard.jsx`: Used in listings and recommendations
+  - `ProductCarousel.jsx`: Featured products display with animation
+  - `Pagination.jsx`: Standardized pagination across product listings and admin tables
+  - `CreditCardForm.jsx`: Stripe-integrated payment form
+  - `ReviewSection.jsx`: Product review display and submission
+
+### State Management in Templates
+
+- **Context Integration**: Components access global state via Context API
+  - `useAppContext()` hook provides authentication, cart, and error states
+  - Context-aware rendering (e.g., showing "Add to Cart" only for logged-in users)
+
+- **Local Component State**: Page-specific state managed within components
+  - Form data and validation states
+  - UI toggles (modals, dropdowns, accordions)
+  - Pagination and filtering states
 
 ## Features and Examples (Using Seeded Data)
 
