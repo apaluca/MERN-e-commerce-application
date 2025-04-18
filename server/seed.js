@@ -5,6 +5,7 @@ require("dotenv").config();
 // Import models
 const User = require("./models/User");
 const Product = require("./models/Product");
+const Review = require("./models/Review");
 const Order = require("./models/Order");
 const Cart = require("./models/Cart");
 const Settings = require("./models/Settings");
