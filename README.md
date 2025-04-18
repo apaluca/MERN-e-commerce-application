@@ -4,7 +4,7 @@ A full-featured e-commerce application built using the MERN stack (MongoDB, Expr
 
 ## Live Website & Test Accounts
 
-**Live Website:** [https://www.lucest.ro](https://www.lucest.ro)
+**Live Website:** [https://lucest.ro](https://lucest.ro)
 
 **Test Accounts:**
 - Admin: admin@example.com / password123
